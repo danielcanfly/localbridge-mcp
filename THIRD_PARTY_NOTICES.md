@@ -1,15 +1,38 @@
 # Third-party notices
 
-No third-party source code has been imported into this repository yet.
+Daniel Commander selectively derives portions of Desktop Commander MCP.
 
-The planned P2 core import will selectively derive portions from:
+## Desktop Commander MCP
 
 - Project: Desktop Commander MCP
 - Upstream: https://github.com/wonderwhy-er/DesktopCommanderMCP
-- Qualification baseline: v0.2.51
+- Pinned source baseline: v0.2.51
 - Commit: 092ce0b841e86455f12e41f4dc36399a7522ecb5
+- Imported/derived in P2: terminal session management, command parsing/blocklist logic, process-state detection, fuzzy-search core, ripgrep resolution, and the headless search-session design
 - License: MIT
 
-When source is imported, the upstream MIT copyright and permission notice will
-be retained as required by the license, and modified/derived areas will be
-documented here.
+The copied/derived source files include pinned-upstream provenance headers. Daniel Commander removes upstream telemetry, UI/document integrations, hosted-remote dependencies, and product-specific behavior from the P2 headless core.
+
+### Upstream license
+
+MIT License
+
+Copyright (c) 2024-2025 Eduard Ruzga and Desktop Commander Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
