@@ -1,6 +1,6 @@
 # macOS installation
 
-This guide covers the public single-owner macOS path.
+This guide covers the public single-owner macOS path for the currently qualified ChatGPT / OpenAI Secure MCP Tunnel setup.
 
 ## 1. Prerequisites
 
@@ -8,7 +8,8 @@ Install:
 
 - Node.js 20 or newer and npm
 - Xcode Command Line Tools
-- tunnel-client if you want the OpenAI Secure MCP Tunnel path
+- `git`
+- `tunnel-client` if you want the OpenAI Secure MCP Tunnel path
 
 LocalBridge MCP does not install or bundle a shared remote relay.
 
@@ -18,17 +19,53 @@ The persistent ChatGPT runtime needs user-owned configuration that is not includ
 
 | Required input | What it means | How to handle it |
 | --- | --- | --- |
-| OpenAI Secure MCP Tunnel ID | The tunnel identifier, usually starting with `tunnel_` | Pass it to `--tunnel-id`; do not invent it |
-| Tunnels-only API key | An OpenAI API key restricted to the `Tunnels` permission | Store it in `~/.config/localbridge-mcp/tunnel-runtime-key` with mode `600`; do not paste it into chat or commit it |
+| OpenAI Secure MCP Tunnel ID | The tunnel identifier, usually starting with `tunnel_` | Create or find it in OpenAI Tunnels management; pass it to `--tunnel-id`; do not invent it |
+| Tunnels-only API key | An OpenAI API key restricted to the `Tunnels` permission | Create it in OpenAI Runtime API keys; store it in `~/.config/localbridge-mcp/tunnel-runtime-key` with mode `600`; do not paste it into chat or commit it |
 | Filesystem allowlist | Directories LocalBridge MCP may access through filesystem tools | Pass one or more `--allow` values; start with a project directory |
 | macOS privacy approval | Runtime.app access to protected folders such as Desktop or Documents | Approve only the folders you intentionally allow |
 | `tunnel-client` | Local tunnel client binary | Install it before using the persistent ChatGPT tunnel path |
 
-If an AI assistant is installing this for you, it should stop and ask when any required value is missing. It should not create fake tunnel IDs, fake keys, or broad allowlists on your behalf.
+If an AI assistant is installing this for you, it must show the setup links below before asking whether you already have a tunnel ID, runtime key, or `tunnel-client`. It should not create fake tunnel IDs, fake keys, or broad allowlists on your behalf.
 
 For local stdio-only use, you can skip the tunnel ID, tunnel API key, and `tunnel-client`. You still need to choose an allowlist.
 
-## 3. Copy-paste bootstrap when the assistant has no local shell tool
+## 3. OpenAI setup links the assistant must show
+
+When the selected platform is ChatGPT / OpenAI and any tunnel or key value is missing, the assistant must show this block before asking for values:
+
+```text
+Create or find your OpenAI Secure MCP Tunnel:
+https://platform.openai.com/settings/organization/tunnels
+
+Create a Runtime API key for tunnel-client:
+https://platform.openai.com/settings/organization/api-keys
+
+Use a restricted runtime key with Tunnels permission for the long-running daemon.
+Do not paste the key into chat. The bootstrap script will read it with hidden input and store it locally at:
+~/.config/localbridge-mcp/tunnel-runtime-key
+
+Do not use an Admin API key as the long-running runtime key. Admin keys are for tunnel management, not the daemon.
+
+ChatGPT connector settings:
+https://chatgpt.com/#settings/Connectors
+
+OpenAI tunnel-client installation and permission docs:
+https://github.com/openai/tunnel-client/blob/master/docs/end-user-guide.md
+https://github.com/openai/tunnel-client/blob/master/docs/permissions.md
+```
+
+The assistant should then ask:
+
+```text
+Tunnel ID: already available / need to create
+Tunnels-only Runtime API key: already available / need to create
+Allowlist directory: <path>
+tunnel-client: installed / not installed / unsure
+```
+
+The assistant should not ask the user to paste the API key into chat.
+
+## 4. Copy-paste bootstrap when the assistant has no local shell tool
 
 Some AI sessions can read this repository but cannot operate the user's Mac directly. In that case, the assistant should not merely stop after explaining the limitation. It should provide a single copy-paste Terminal script that:
 
@@ -170,7 +207,7 @@ echo "LOCALBRIDGE_BOOTSTRAP_DONE"
 echo "Paste this terminal output back into the AI session for review."
 ```
 
-## 4. Clone and configure the core
+## 5. Clone and configure the core
 
 Choose one or more directories the MCP filesystem tools may access:
 
@@ -184,7 +221,7 @@ Inspect the result:
 
     ./scripts/doctor.sh
 
-## 5. Local MCP clients
+## 6. Local MCP clients
 
 The core setup prints a stdio command in this form:
 
@@ -194,9 +231,9 @@ Register that command in any MCP client that supports a local stdio server.
 
 No tunnel is needed for this mode.
 
-## 6. Prepare remote credentials
+## 7. Prepare remote credentials
 
-For the persistent ChatGPT path you need your own OpenAI Secure MCP Tunnel configuration.
+For the persistent ChatGPT path you need your own OpenAI Secure MCP Tunnel configuration. See section 3 for the exact OpenAI setup links.
 
 Store the control-plane credential in a private file rather than in a shell history or plist:
 
@@ -208,7 +245,7 @@ Store the control-plane credential in a private file rather than in a shell hist
 
 Do not put the credential in this repository.
 
-## 7. Configure the macOS remote runtime
+## 8. Configure the macOS remote runtime
 
     ./scripts/setup-macos.sh \
       --allow "$HOME/Projects" \
@@ -226,7 +263,7 @@ The script:
 
 If macOS asks LocalBridge MCP Runtime for Documents/Desktop access, approve only the folders you intend LocalBridge MCP to operate on.
 
-## 8. Verify
+## 9. Verify
 
     ./scripts/macos-service.sh status
 
@@ -242,7 +279,7 @@ You can also run:
 
     ./scripts/doctor.sh
 
-## 9. Update
+## 10. Update
 
 After pulling source changes:
 
@@ -251,7 +288,7 @@ After pulling source changes:
 
 The normal update path replaces the deployed JavaScript runtime without rebuilding Runtime.app.
 
-## 10. Stop or uninstall the service
+## 11. Stop or uninstall the service
 
 Temporarily stop it:
 
