@@ -82,6 +82,8 @@ If you are an AI assistant installing LocalBridge MCP:
 7. Never generate fake credentials, tunnel IDs, SSH keys, or API keys.
 8. Never store credentials in the repository.
 9. Never print API keys, SSH keys, or tunnel secrets.
+10. If you do not have a local shell or filesystem tool for the user's Mac, do not merely stop after explaining that limitation. Switch to manual Terminal bootstrap mode and provide one complete copy-paste script that prompts interactively for tunnel ID, allowlist, and hidden API key input.
+11. The manual bootstrap script must not require the user to edit placeholders. It should use `read` prompts, `read -s` or an equivalent hidden-input method for the API key, write the key to a local file with mode `600`, run the repository setup scripts, verify service health, and ask the user to paste terminal output back into the chat.
 
 For local stdio-only use, no tunnel ID or tunnel API key is required. The user still needs to choose an allowlist.
 
@@ -181,7 +183,7 @@ HEALTH=ok
 READY=ok
 ```
 
-See [docs/INSTALL_MACOS.md](docs/INSTALL_MACOS.md) for the full installation, update, profile-only validation, and uninstall flow.
+See [docs/INSTALL_MACOS.md](docs/INSTALL_MACOS.md) for the full installation, update, profile-only validation, uninstall flow, and copy-paste bootstrap script for AI sessions that cannot operate the local terminal directly.
 
 ## AI-assisted install prompt
 
@@ -212,10 +214,22 @@ Use the repository scripts instead of hand-writing a service:
 6. run tunnel-client doctor for the generated profile;
 7. verify scripts/macos-service.sh status returns HEALTH=ok and READY=ok.
 
+If you do not have a local shell/filesystem tool for this Mac, do not stop after only saying you cannot operate the machine. Instead, switch to manual Terminal bootstrap mode:
+- give me one complete macOS Terminal script I can copy and paste;
+- the script must ask for tunnel ID and allowlist interactively;
+- the script must ask for the Tunnels-only API key with hidden input;
+- the script must write the key to ~/.config/localbridge-mcp/tunnel-runtime-key with chmod 600;
+- the script must not print the key;
+- the script must clone or update LocalBridge MCP, run npm ci, run npm test, run setup-macos.sh, run tunnel-client doctor, and run macos-service.sh status;
+- the script must not require me to edit placeholders before pasting;
+- after the script runs, ask me to paste the terminal output back here for review.
+
 Stop and ask me if any credential, tunnel, tunnel-client installation, macOS permission, or allowlist is missing.
 ```
 
-The assistant can perform local setup work, but every user must provide their own tunnel, key, and filesystem boundaries.
+The assistant can perform local setup work when it has a local execution tool. Without one, it should provide the manual bootstrap script from `docs/INSTALL_MACOS.md` rather than asking the user to paste secrets into chat.
+
+Every user must provide their own tunnel, key, and filesystem boundaries.
 
 ## MCP tool surface
 
