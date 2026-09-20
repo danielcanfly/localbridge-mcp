@@ -5,11 +5,59 @@
 [![Release](https://img.shields.io/github/v/release/danielcanfly/localbridge-mcp?label=release)](https://github.com/danielcanfly/localbridge-mcp/releases)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-LocalBridge MCP is a self-hosted MCP server that lets online AI assistants work with a local computer through a controlled, user-owned bridge.
+LocalBridge MCP is a self-hosted bridge between an online AI assistant and your own computer.
 
-It exposes local files, search, text editing, persistent shell sessions, Git, SSH, and other command-line workflows to online MCP clients that can reach a user-owned LocalBridge MCP runtime.
+Most online assistants can reason, write code, and plan work, but they normally cannot touch the local files, terminals, repos, logs, and scripts that make real work happen. LocalBridge MCP gives a trusted assistant a controlled doorway into a machine you own, so it can inspect files, edit text, search a project, run tests, use Git, and operate a shell inside the boundaries you choose.
 
-> LocalBridge MCP is intentionally powerful. It is designed for trusted, single-owner local automation. It is not a hosted service, not a sandbox, and not an unauthenticated public endpoint.
+Think of it as a local workbench for an online AI assistant:
+
+```text
+online AI assistant
+  -> your connector or tunnel
+  -> LocalBridge MCP on your computer
+  -> allowed files, search, edits, shell, Git, SSH, tests, scripts
+```
+
+It is not a cloud agent. It is not a hosted relay. It is not a sandbox. It is your computer, your credentials, your allowlist, and your risk boundary.
+
+> LocalBridge MCP is intentionally powerful. Treat it like giving an assistant access to a terminal, not like installing a harmless browser bookmark.
+
+## In one minute
+
+Use LocalBridge MCP when you want an online AI assistant to help with local computer work, for example:
+
+- look through a repo and explain what changed;
+- edit files and run the test suite;
+- search a project faster than copying snippets into chat;
+- execute small shell commands and return exact output;
+- drive Git, SSH, package managers, Docker, build scripts, or deployment commands;
+- keep a persistent macOS runtime online through OpenAI Secure MCP Tunnel.
+
+The currently qualified happy path is:
+
+```text
+ChatGPT
+  -> developer-mode MCP app
+  -> OpenAI Secure MCP Tunnel
+  -> LocalBridge MCP Runtime.app on macOS
+  -> local filesystem and shell tools
+```
+
+That path has been end-to-end tested for listing files, reading files, writing a smoke-test file, and running a shell command.
+
+## What this repo is and is not
+
+| This repo is | This repo is not |
+| --- | --- |
+| A self-hosted MCP server for local files, search, editing, and shell work | A hosted SaaS relay |
+| A bridge from online assistants to a user-owned runtime | A shared public endpoint |
+| A macOS-qualified ChatGPT/OpenAI Secure MCP Tunnel setup | A universal all-platform installer |
+| A controlled local automation surface | A security sandbox |
+| Source release only | An npm-published package |
+
+LocalBridge MCP does **not** provide a hosted relay. It also does not provide shared credentials, a shared tunnel, a cloud agent, a web dashboard, model hosting, or billing infrastructure.
+
+Each user brings their own computer, platform account, connector or tunnel, API key if required, filesystem allowlist, and security boundary.
 
 ## Status
 
@@ -19,18 +67,33 @@ It exposes local files, search, text editing, persistent shell sessions, Git, SS
 | Distribution | Source release only |
 | npm package | Disabled intentionally (`private: true`) |
 | Qualified online platform path | ChatGPT through OpenAI Secure MCP Tunnel |
-| Other online platforms | Researched in `docs/ONLINE_PLATFORMS.md`; not yet qualified here |
+| Other online platforms | Researched in `docs/ONLINE_PLATFORMS.md`; protocol-compatible guides exist, but not yet qualified here |
 | macOS local core | Qualified |
 | Linux local core | Qualified in CI |
 | macOS persistent runtime | Qualified with `launchd` and Runtime.app |
-| Windows | Not yet qualified |
+| Windows | Not yet qualified; do not advertise as supported |
 | Hosted relay | Not provided |
 
 Release: [LocalBridge MCP v0.2.1](https://github.com/danielcanfly/localbridge-mcp/releases/tag/v0.2.1)
 
-## Start here: ask the target online platform
+## Can I use it on Windows?
 
-Every guided install should start by asking the user:
+Not as a supported path yet.
+
+Parts of the TypeScript core are written with portability in mind, but this repository does **not** currently claim Windows qualification. The Windows path still needs dedicated testing for path handling, line endings, shell behavior, process management, service startup, `tunnel-client`, permissions, and ChatGPT end-to-end tool calls.
+
+Practical guidance:
+
+- **macOS**: use this repo's qualified ChatGPT/OpenAI Secure MCP Tunnel path.
+- **Linux**: the portable stdio core is tested in CI, but no production service manager is advertised here yet.
+- **Windows**: treat as future work or an experiment, not a documented install target.
+- **WSL**: may be useful for experimentation, but it should be treated as an unqualified Linux-like environment until someone runs a focused WSL/Windows qualification pass.
+
+See [docs/PORTABILITY.md](docs/PORTABILITY.md) for the current portability contract.
+
+## Start here: choose the online platform
+
+Every guided install should start by asking:
 
 ```text
 Which online platform are you connecting LocalBridge MCP to?
@@ -48,15 +111,60 @@ Choose one if possible:
 - Other
 ```
 
-Do not assume ChatGPT. Tunnel IDs, API keys, connector URLs, and remote MCP requirements are platform-specific.
+Do not assume ChatGPT. Tunnel IDs, API keys, connector URLs, OAuth settings, and remote MCP requirements are platform-specific.
 
-The only currently qualified path in this repository is **ChatGPT / OpenAI Secure MCP Tunnel on macOS**. Other online platforms may support custom remote MCP servers, but LocalBridge MCP still needs a platform-compatible remote transport path before they are claimed as supported.
+The only currently qualified online path in this repository is **ChatGPT / OpenAI Secure MCP Tunnel on macOS**. Other online platforms may support custom remote MCP servers, but LocalBridge MCP still needs a platform-compatible remote transport path before they are claimed as supported.
 
-See [docs/ONLINE_PLATFORMS.md](docs/ONLINE_PLATFORMS.md) and [docs/platforms/protocol-compatible-guides.md](docs/platforms/protocol-compatible-guides.md) for the online platform compatibility matrix, setup links, and support wording.
+See:
+
+- [Online platform compatibility](docs/ONLINE_PLATFORMS.md)
+- [Protocol-compatible platform guides](docs/platforms/protocol-compatible-guides.md)
+- [Platform setup flow reference](docs/platforms/platform-flow-reference.md)
+- [ChatGPT UI gates](docs/platforms/chatgpt-ui-gates.md)
+
+## ChatGPT setup, in plain English
+
+For the qualified ChatGPT/OpenAI path, the user supplies three things:
+
+1. **A tunnel**: the private route between ChatGPT and the user's local machine.
+2. **A restricted Runtime API key**: used by `tunnel-client` to keep that route alive. Do not paste it into chat.
+3. **An allowlist**: the local directories LocalBridge is allowed to touch.
+
+The local runtime then runs behind `launchd` and `LocalBridge MCP Runtime.app` on macOS.
+
+After the local install is healthy, the ChatGPT-side app is created from:
+
+```text
+https://chatgpt.com/plugins
+```
+
+With Developer Mode enabled, a `+` button appears next to the plugin search box. Click it and fill the new plugin form:
+
+```text
+Name:
+LocalBridge MCP
+
+Description:
+Self-hosted MCP bridge for local files, search, editing, shell sessions, Git, and SSH.
+
+Connection:
+Tunnel / 通道
+
+Available tunnel:
+Select localbridge-mcp (tunnel_...)
+
+Authentication:
+None / No authentication / 無
+
+Advanced OAuth settings:
+Leave unset for the current stdio-over-tunnel path.
+```
+
+Start with read-only smoke tests before write or shell tests.
 
 ## Required installer behavior: links before values
 
-When an AI assistant is guiding a setup, it must not only ask for a missing tunnel ID, API key, connector URL, or allowlist. It must first show the platform-specific setup links and explain where the user creates or finds each value.
+When an AI assistant is guiding setup, it must not only ask for a missing tunnel ID, API key, connector URL, or allowlist. It must first show the platform-specific setup links and explain where the user creates or finds each value.
 
 For ChatGPT / OpenAI, show this block before asking whether the user already has a tunnel ID or runtime key:
 
@@ -73,15 +181,15 @@ Do not paste the key into chat. The bootstrap script will read it with hidden in
 
 Do not use an Admin API key as the long-running runtime key. Admin keys are for tunnel management, not the daemon.
 
-ChatGPT connector settings:
-https://chatgpt.com/#settings/Connectors
+Create the ChatGPT developer-mode MCP app:
+https://chatgpt.com/plugins
 
 OpenAI tunnel-client installation and permission docs:
 https://github.com/openai/tunnel-client/blob/master/docs/end-user-guide.md
 https://github.com/openai/tunnel-client/blob/master/docs/permissions.md
 ```
 
-For non-OpenAI platforms, show the platform setup links from `docs/ONLINE_PLATFORMS.md` or `docs/platforms/protocol-compatible-guides.md` before asking for a connector URL, OAuth/client configuration, vendor key, bearer token, tunnel token, or enterprise data-store settings.
+For non-OpenAI platforms, show the platform setup links from `docs/ONLINE_PLATFORMS.md`, `docs/platforms/protocol-compatible-guides.md`, or `docs/platforms/platform-flow-reference.md` before asking for a connector URL, OAuth/client configuration, vendor key, bearer token, tunnel token, or enterprise data-store settings.
 
 Do not promise that any vendor key, tunnel, connector, or tool call is free. Safe wording is: use the narrowest platform key or auth method available, keep budgets or alerts enabled where available, and check the vendor's current billing policy.
 
@@ -95,10 +203,6 @@ LocalBridge MCP gives an AI assistant a tool surface for practical local work:
 - start and manage persistent shell sessions;
 - drive Git, SSH, test runners, package managers, Docker, and other CLI workflows through the shell;
 - on macOS, run persistently behind OpenAI Secure MCP Tunnel through a local Runtime.app and `launchd`.
-
-LocalBridge MCP does **not** provide a hosted relay. It also does not provide shared credentials, a shared tunnel, a cloud agent, a web dashboard, model hosting, or billing infrastructure.
-
-Each user brings their own computer, credentials, tunnel or connector path, filesystem allowlist, and risk boundary.
 
 ## Before you install
 
@@ -121,10 +225,10 @@ For other online platforms, see `docs/ONLINE_PLATFORMS.md` first. Most non-OpenA
 
 If you are an AI assistant installing LocalBridge MCP:
 
-1. Read this README, `docs/ONLINE_PLATFORMS.md`, `docs/platforms/protocol-compatible-guides.md`, and `docs/INSTALL_MACOS.md` before running commands.
+1. Read this README, `docs/ONLINE_PLATFORMS.md`, `docs/platforms/protocol-compatible-guides.md`, `docs/platforms/platform-flow-reference.md`, and `docs/INSTALL_MACOS.md` before running commands.
 2. Ask which online platform the user wants to connect before choosing an install path.
 3. After the user chooses a platform, show that platform's setup links and credential instructions before asking for missing values.
-4. If the user chooses ChatGPT/OpenAI, show the OpenAI Tunnels, Runtime API key, ChatGPT connector settings, and tunnel-client docs links before asking for tunnel ID, runtime key readiness, or `tunnel-client` status.
+4. If the user chooses ChatGPT/OpenAI, show the OpenAI Tunnels, Runtime API key, ChatGPT plugin creation page, and tunnel-client docs links before asking for tunnel ID, runtime key readiness, or `tunnel-client` status.
 5. If the user chooses Claude, Grok, Perplexity, Gemini, Mistral, GitHub Copilot cloud/app, or Kimi web, show the platform's setup links first, explain that the platform may support custom remote MCP servers, and stop if the user does not have a reachable LocalBridge remote MCP URL or gateway.
 6. If the user chooses an unverified platform such as Poe, MiniMax chat/web, DeepSeek web, You.com chat, or another platform, ask for official custom MCP connector documentation before claiming support.
 7. Check that Node.js and npm are installed. For the ChatGPT tunnel path, also check `tunnel-client`.
@@ -183,7 +287,7 @@ You can give this repository to ChatGPT or another online AI assistant and ask i
 ```text
 Install LocalBridge MCP from https://github.com/danielcanfly/localbridge-mcp on this computer.
 
-Read README.md, docs/ONLINE_PLATFORMS.md, docs/platforms/protocol-compatible-guides.md, and docs/INSTALL_MACOS.md first. Do not invent credentials. Do not print secrets.
+Read README.md, docs/ONLINE_PLATFORMS.md, docs/platforms/protocol-compatible-guides.md, docs/platforms/platform-flow-reference.md, and docs/INSTALL_MACOS.md first. Do not invent credentials. Do not print secrets.
 
 Start by asking me which online platform I want to connect:
 - ChatGPT / OpenAI
@@ -204,7 +308,7 @@ After I choose a platform, show me exactly where to create or find the platform-
 If I choose ChatGPT / OpenAI, show these links before asking for Tunnel ID or Runtime API key readiness:
 - OpenAI Tunnels management: https://platform.openai.com/settings/organization/tunnels
 - OpenAI Runtime API keys: https://platform.openai.com/settings/organization/api-keys
-- ChatGPT connector settings: https://chatgpt.com/#settings/Connectors
+- ChatGPT developer-mode plugin page: https://chatgpt.com/plugins
 - OpenAI tunnel-client guide: https://github.com/openai/tunnel-client/blob/master/docs/end-user-guide.md
 - OpenAI tunnel-client permissions: https://github.com/openai/tunnel-client/blob/master/docs/permissions.md
 
@@ -319,6 +423,8 @@ npm run release:preflight
 
 - [Online platform compatibility](docs/ONLINE_PLATFORMS.md)
 - [Protocol-compatible online platform guides](docs/platforms/protocol-compatible-guides.md)
+- [Platform setup flow reference](docs/platforms/platform-flow-reference.md)
+- [ChatGPT UI gates](docs/platforms/chatgpt-ui-gates.md)
 - [macOS installation](docs/INSTALL_MACOS.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Portability](docs/PORTABILITY.md)
