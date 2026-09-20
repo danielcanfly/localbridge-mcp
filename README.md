@@ -93,6 +93,8 @@ See [docs/INSTALL_MACOS.md](docs/INSTALL_MACOS.md) for the full installation and
 
 Normal updates replace the deployed JavaScript bundle without rebuilding the Runtime.app, preserving its macOS privacy authorization.
 
+The current RC does not currently prevent macOS system sleep. When the Mac sleeps, remote MCP availability pauses until the machine wakes. Active-only `caffeinate` behavior remains an original-v0.1 lifecycle requirement for the next qualification phase.
+
 ## Configuration
 
 The default is deliberately fail-closed:
@@ -104,6 +106,8 @@ The default is deliberately fail-closed:
 See [config.example.json](config.example.json).
 
 User-specific paths, tunnel identifiers, credentials, SSH aliases/keys, and runtime secrets belong in external configuration, never in the repository.
+
+`fileWriteLineLimit` is an advisory chunking threshold for `write_file`. It produces a warning for large writes; it is not a security boundary or hard size cap.
 
 ## Security model
 

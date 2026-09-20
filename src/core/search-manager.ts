@@ -1,5 +1,5 @@
 // Derived from wonderwhy-er/DesktopCommanderMCP search-manager.ts @ 092ce0b841e86455f12e41f4dc36399a7522ecb5
-// Office-document search and telemetry were intentionally removed.
+// Office-document search and product instrumentation were intentionally removed.
 import { spawn, type ChildProcess } from 'node:child_process';
 import { validatePath } from './filesystem.js';
 import { getRipgrepPath } from './ripgrep-resolver.js';

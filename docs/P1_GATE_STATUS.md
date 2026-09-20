@@ -61,3 +61,7 @@ This is an account-specific qualification of the tested ChatGPT Plus rollout on 
 ## Next phase
 
 P2 may begin selective import of the pinned Desktop Commander local execution core. The deprecated job-skills-gateway and the old Oracle-hosted MCP remain untouched until the replacement is fully qualified.
+
+## Qualification scaffold retirement
+
+The temporary `gate/` MCP implementation was intentionally removed from the release-candidate source tree after the production 17-tool server, Secure Tunnel path, and later reconnect/crash-recovery paths were qualified. This document preserves the P1 evidence without shipping the one-off Gate server as product source.

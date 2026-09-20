@@ -320,7 +320,7 @@ export class TerminalManager {
 
     this.sessions.set(childProcess.pid, session);
 
-    // Timing telemetry
+    // Local timing metrics
     const startTime = Date.now();
     let firstOutputTime: number | undefined;
     let lastOutputTime: number | undefined;

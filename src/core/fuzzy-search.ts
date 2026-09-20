@@ -6,7 +6,7 @@ export const FUZZY_SEARCH_TIMEOUT_MS = 30000;
 const WORKER_CODE = `
 const { workerData, parentPort } = require('worker_threads');
 import(workerData.moduleUrl)
-  .then((m) => parentPort.postMessage({ ok: true, result: m.runFuzzySearch(workerData.text, workerData.query).result }))
+  .then((m) => parentPort.postMessage({ ok: true, result: m.runFuzzySearch(workerData.text, workerData.query) }))
   .catch((err) => parentPort.postMessage({ ok: false, error: String(err && err.stack || err) }));
 `;
 const CORE_MODULE_URL = new URL('./fuzzy-search-core.js', import.meta.url).href;

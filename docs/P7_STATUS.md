@@ -97,3 +97,19 @@ Private vulnerability reporting is intentionally deferred until that public-only
 Main branch protection remains opt-in with `--protect-main` because enabling it changes the maintainer's direct-push workflow.
 
 P7 final source state: `READY_FOR_OWNER_PUBLIC_VISIBILITY_GATE`.
+
+## Original-plan reconciliation audit
+
+Before public visibility, the frozen original P0-P9 construction plan was re-audited against the repository, tests, GitHub release surface, and live production runtime.
+
+The audit found no missing original P0-P7 capability, but it found phase-number drift and five release-quality defects that were repaired before publication:
+
+- MCP server protocol version still advertised `0.1.0-dev` while the package was `0.1.0-rc.1`;
+- the temporary P1 `gate/` qualification scaffold still shipped in the release tree;
+- unused telemetry-derived fuzzy-search metric payloads remained in the imported core;
+- `fileWriteLineLimit` was exposed as configuration but had no effect;
+- direct-start config creation did not explicitly harden the config directory to mode 0700.
+
+The audit also corrected lifecycle status: most of the original P8 work was implemented early in the later P5 runtime phase, but active-only `caffeinate` / no-sleep behavior is still missing. Original P8 therefore remains partial, and original P9 remains a separate row-by-row final qualification before any `DANIEL_COMMANDER_V0_1_PASS` declaration.
+
+See `docs/ORIGINAL_PLAN_RECONCILIATION.md` for the authority mapping.

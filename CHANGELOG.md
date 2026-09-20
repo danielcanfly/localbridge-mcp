@@ -18,6 +18,12 @@ First public-release candidate.
 
 ### Hardened
 
+- Removed the one-off P1 Gate qualification scaffold from release source.
+- Synchronized the MCP server protocol version with the package release version.
+- Removed unused telemetry-derived fuzzy-search timing payloads.
+- Activated `fileWriteLineLimit` as an advisory write-chunk warning instead of leaving a dead configuration key.
+- Hardened direct-start config directory permissions to 0700.
+
 - Removed upstream telemetry, hosted remote-device dependencies, product UI, and document-specific tooling from the imported execution core.
 - Added verified orphan-tunnel cleanup and two-layer crash recovery.
 - Removed login-shell startup files from background terminal execution.
@@ -31,4 +37,5 @@ First public-release candidate.
 - Linux production service management is not yet implemented.
 - Filesystem allowlists and command blocklists are guardrails, not an OS sandbox.
 - The project does not provide a hosted relay or shared remote credentials.
+- The macOS runtime does not yet prevent system sleep; remote access pauses while the Mac is asleep.
 - npm publication is intentionally disabled; this release distributes source through GitHub.

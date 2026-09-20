@@ -60,3 +60,11 @@ P6 intentionally does not flip repository visibility automatically.
 - [ ] `./scripts/github-public-finalize.sh` reports `OWNER_PUBLIC_VISIBILITY_GATE_PENDING` while private.
 - [ ] After visibility becomes public, run `./scripts/github-public-finalize.sh --apply`.
 - [ ] Main branch protection is enabled only if the owner intentionally accepts the PR/check workflow change.
+
+## Original-plan reconciliation
+
+- [ ] `docs/ORIGINAL_PLAN_RECONCILIATION.md` has been reviewed.
+- [ ] Original P0-P7 task content is complete regardless of later phase-number reuse.
+- [ ] Public RC notes do not claim original P8 or P9 are complete.
+- [ ] The temporary P1 `gate/` qualification scaffold is absent from the release tree.
+- [ ] MCP server protocol version equals the package version.

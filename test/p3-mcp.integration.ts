@@ -31,7 +31,7 @@ await fs.writeFile(path.join(configDir, 'config.json'), JSON.stringify({
   defaultShell: process.env.SHELL || (process.platform === 'darwin' ? '/bin/zsh' : '/bin/sh'),
   allowedDirectories: [workspace],
   fileReadLineLimit: 1000,
-  fileWriteLineLimit: 2000
+  fileWriteLineLimit: 2
 }, null, 2));
 
 await fs.writeFile(path.join(workspace, 'alpha.txt'), 'alpha\nneedle line\nomega\n');
@@ -89,6 +89,14 @@ try {
   })), /WROTE/);
   await call(client, 'write_file', { path: writePath, content: 'TWO\n', mode: 'append' });
   assert.equal(await fs.readFile(writePath, 'utf8'), 'ONE\nTWO\n');
+
+  const advisoryPath = path.join(nested, 'advisory.txt');
+  const advisory = textOf(await call(client, 'write_file', {
+    path: advisoryPath,
+    content: 'one\ntwo\nthree',
+    mode: 'rewrite'
+  }));
+  assert.match(advisory, /configured advisory threshold is 2/);
 
   const movedPath = path.join(nested, 'moved.txt');
   await call(client, 'move_file', { source: writePath, destination: movedPath });

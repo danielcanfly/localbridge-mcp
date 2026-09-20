@@ -1,5 +1,7 @@
 import * as z from 'zod/v4';
 import { McpServer } from '@modelcontextprotocol/server';
+import { MCP_SERVER_VERSION } from '../config.js';
+import { configManager } from '../config-manager.js';
 import {
   createDirectory,
   editBlock,
@@ -67,7 +69,7 @@ export const DANIEL_COMMANDER_TOOL_NAMES = [
 export function createDanielCommanderServer(): McpServer {
   const server = new McpServer({
     name: 'daniel-commander',
-    version: '0.1.0-dev'
+    version: MCP_SERVER_VERSION
   });
 
   server.registerTool(
@@ -140,7 +142,12 @@ export function createDanielCommanderServer(): McpServer {
     },
     safe(async ({ path, content, mode }) => {
       await writeFile(path, content, mode);
-      return textResult(`WROTE ${path} (${Buffer.byteLength(content)} bytes, mode=${mode})`);
+      const cfg = await configManager.getConfig();
+      const lineCount = content.split('\n').length;
+      const warning = lineCount > cfg.fileWriteLineLimit
+        ? ` WARNING: write contained ${lineCount} lines; configured advisory threshold is ${cfg.fileWriteLineLimit}. Prefer smaller chunks for more reliable tool calls.`
+        : '';
+      return textResult(`WROTE ${path} (${Buffer.byteLength(content)} bytes, ${lineCount} lines, mode=${mode}).${warning}`);
     })
   );
 

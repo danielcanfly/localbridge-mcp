@@ -21,11 +21,15 @@ case "$VERSION" in
 esac
 [ "$PRIVATE" = "true" ] || fail "npm package must remain private"
 
+if git ls-tree -r --name-only HEAD | grep -q '^gate/'; then
+  fail "temporary P1 gate scaffold must not ship in the release tree"
+fi
+
 npm test
 npm audit
 git diff --check
 
-for required in LICENSE THIRD_PARTY_NOTICES.md SECURITY.md CONTRIBUTING.md CHANGELOG.md docs/RELEASE_PROCESS.md docs/P7_STATUS.md; do
+for required in LICENSE THIRD_PARTY_NOTICES.md SECURITY.md CONTRIBUTING.md CHANGELOG.md docs/RELEASE_PROCESS.md docs/P7_STATUS.md docs/ORIGINAL_PLAN_RECONCILIATION.md; do
   [ -s "$required" ] || fail "missing required release file: $required"
 done
 

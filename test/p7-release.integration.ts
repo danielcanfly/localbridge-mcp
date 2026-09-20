@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import { MCP_SERVER_VERSION } from '../src/config.js';
 
 const pkg = JSON.parse(await fs.readFile('package.json', 'utf8'));
 const ci = await fs.readFile('.github/workflows/ci.yml', 'utf8');
@@ -12,6 +13,7 @@ const p7 = await fs.readFile('docs/P7_STATUS.md', 'utf8');
 
 assert.equal(pkg.version, '0.1.0-rc.1');
 assert.equal(pkg.private, true);
+assert.equal(MCP_SERVER_VERSION, pkg.version);
 console.log('P7_RC_VERSION_PASS');
 
 for (const workflow of [ci, codeql]) {
@@ -52,3 +54,9 @@ for (const path of [
   assert.equal(stat.isFile(), true, `missing public project surface: ${path}`);
 }
 console.log('P7_PUBLIC_PROJECT_SURFACE_PASS');
+
+await assert.rejects(
+  fs.stat('gate'),
+  (error: any) => error?.code === 'ENOENT'
+);
+console.log('P7_NO_QUALIFICATION_SCAFFOLD_PASS');

@@ -47,7 +47,8 @@ class ConfigManager {
 
   private async persist(): Promise<void> {
     if (!this.config) return;
-    await fs.mkdir(path.dirname(CONFIG_FILE), { recursive: true });
+    await fs.mkdir(path.dirname(CONFIG_FILE), { recursive: true, mode: 0o700 });
+    await fs.chmod(path.dirname(CONFIG_FILE), 0o700);
     const tmp = `${CONFIG_FILE}.${process.pid}.tmp`;
     await fs.writeFile(tmp, JSON.stringify(this.config, null, 2) + '\n', { encoding: 'utf8', mode: 0o600 });
     await fs.rename(tmp, CONFIG_FILE);

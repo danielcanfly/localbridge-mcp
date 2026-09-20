@@ -13,6 +13,12 @@ const { configManager } = await import('../src/config-manager.js');
 const core = await import('../src/core/index.js');
 
 await configManager.init();
+if (process.platform !== 'win32') {
+  const dirMode = (await fs.stat(configDir)).mode & 0o777;
+  const fileMode = (await fs.stat(path.join(configDir, 'config.json'))).mode & 0o777;
+  assert.equal(dirMode, 0o700);
+  assert.equal(fileMode, 0o600);
+}
 const defaults = await configManager.getConfig();
 assert.deepEqual(defaults.allowedDirectories, []);
 await assert.rejects(
