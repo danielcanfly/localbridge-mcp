@@ -1,6 +1,6 @@
 # P6 public-ready and portability status
 
-Status: QUALIFICATION IN PROGRESS on 2026-09-20.
+Status: PASS on 2026-09-20.
 
 ## Goal
 
@@ -82,7 +82,7 @@ Tool discovery selected stable installed binaries, the production bundle updated
 
 ## Privacy and provenance
 
-The entire committed P0-P5 Git history was scanned for:
+The entire reachable main-branch Git history was scanned for:
 
 - the original developer machine username/path;
 - device identifiers;
@@ -117,4 +117,27 @@ The workflow uses current major releases of the official GitHub checkout and set
     P6_SOURCE_DISTRIBUTION_CONTRACT_PASS
     P6_NO_MACHINE_IDENTITY_PASS
 
-Final P6 closure additionally requires the complete local regression suite and the pushed GitHub Actions matrix to pass.
+## Hosted-runner terminal repair
+
+The first pushed CI matrix exposed a real portability bug in persistent terminal handling rather than an infrastructure failure.
+
+P6 repaired three issues:
+
+- background bash/zsh/fish commands no longer force login-shell startup files;
+- appending new bytes to an already-consumed trailing output line rewinds the line cursor so fresh output cannot be lost;
+- POSIX terminal sessions run in their own process group so termination cleans descendant processes instead of leaving shell children orphaned.
+
+A repeated local P2 stress run passed 20/20 with no orphan processes.
+
+## Final closure
+
+The complete local P2-P6 regression suite passes, npm audit reports zero known vulnerabilities, current-tree and reachable-history privacy scans pass, and the pushed GitHub Actions matrix passes all four jobs:
+
+- Ubuntu / Node.js 20
+- Ubuntu / Node.js 24
+- macOS / Node.js 20
+- macOS / Node.js 24
+
+The CI commit history was rebuilt before closure so all reachable main-branch commits use the GitHub noreply author identity. Obsolete Actions runs associated with the replaced history were deleted.
+
+Repository visibility remains private. Making the repository public is an explicit owner action outside P6 closure.
