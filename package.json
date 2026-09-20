@@ -10,9 +10,10 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test:p2": "npm run build && node dist/test/p2-core.integration.js",
-    "test": "npm run test:p2 && npm run test:p3 && npm run test:p4",
+    "test": "npm run test:p2 && npm run test:p3 && npm run test:p4 && npm run test:p5",
     "test:p3": "npm run build && node dist/test/p3-mcp.integration.js",
-    "test:p4": "npm run build && node dist/test/p4-policy.integration.js"
+    "test:p4": "npm run build && node dist/test/p4-policy.integration.js",
+    "test:p5": "npm run build && /usr/bin/swiftc -typecheck runtime-app/DanielCommanderRuntime.swift && node dist/test/p5-runtime.integration.js"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",

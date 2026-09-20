@@ -1,53 +1,74 @@
 # Daniel Commander
 
-Self-hosted MCP computer-control server for local files, search, surgical editing, persistent terminal sessions, and SSH workflows.
+Self-hosted MCP computer control for local files, search, surgical editing, persistent terminal sessions, Git workflows, and SSH.
 
-> Status: pre-alpha. P0 through P4 are qualified. The 17-tool MCP surface works locally and from ChatGPT through a private Secure MCP Tunnel, including real Git workflows and persistent SSH to an existing remote host.
+Status: pre-alpha. P0 through P5 are qualified. The single-owner macOS runtime auto-starts through launchd and connects a private ChatGPT app to the owner's Mac through OpenAI Secure MCP Tunnel.
 
-## Design goals
+## Capabilities
 
-- Run the execution engine on the user's own Mac, Linux machine, or VM.
-- Do not require a shared Daniel Commander cloud relay.
-- Do not impose a Daniel Commander usage quota.
-- Keep the runtime headless and small.
-- Support local files, ripgrep search, targeted edits, persistent shell sessions, Git through the shell, and SSH through the shell.
-- Keep user-specific paths, SSH aliases, credentials, keys, and tunnel secrets outside the repository.
-
-## Current MCP surface
-
-Daniel Commander exposes 17 focused tools covering:
+Daniel Commander exposes 17 focused MCP tools covering:
 
 - text filesystem read/write/list/create/move/info
 - exact and fuzzy block editing
 - asynchronous ripgrep filename/content search
 - persistent terminal process start/output/stdin/session/termination
 
-The selected upstream-derived core is pinned to Desktop Commander MCP v0.2.51 commit `092ce0b841e86455f12e41f4dc36399a7522ecb5`. See `THIRD_PARTY_NOTICES.md`, `docs/P2_SOURCE_CENSUS.md`, `docs/P3_STATUS.md`, and `docs/P4_STATUS.md`.
+Git, Docker, SSH, systemd, test runners, and similar workflows use the general terminal surface instead of product-specific tools.
 
-## Remote path
+The selected upstream-derived execution core is pinned to Desktop Commander MCP v0.2.51 commit 092ce0b841e86455f12e41f4dc36399a7522ecb5. See THIRD_PARTY_NOTICES.md.
 
-The qualified ChatGPT path is:
+## macOS production architecture
 
     ChatGPT
-      -> private development app
+      -> private Daniel Commander app
       -> OpenAI Secure MCP Tunnel
-      -> tunnel-client on the user's machine
-      -> Daniel Commander stdio MCP
+      -> launchd
+      -> Daniel Commander Runtime.app
+      -> tunnel-client
+      -> Homebrew Node
+      -> deployed Daniel Commander MCP bundle
 
-The same local terminal surface can use the user's existing SSH configuration to operate a remote machine. No Daniel Commander agent needs to be installed on that remote machine.
+The development checkout is not executed directly by launchd. A pruned production bundle is deployed outside protected Documents/Desktop locations.
+
+The Runtime.app exists because macOS TCC blocks a plain background LaunchAgent from protected folders. Normal updates replace only the JS runtime bundle, preserving the app identity and its privacy authorization.
+
+See docs/P5_STATUS.md for TCC, crash-recovery, and update qualification details.
+
+## Service commands
+
+From the source checkout:
+
+    ./scripts/macos-service.sh install
+    ./scripts/macos-service.sh status
+    ./scripts/macos-service.sh update
+    ./scripts/macos-service.sh restart
+    ./scripts/macos-service.sh stop
+    ./scripts/macos-service.sh start
+    ./scripts/macos-service.sh uninstall
 
 ## Configuration
 
-Fresh installs are fail-closed. Filesystem access starts with:
+Fresh installs are fail-closed:
 
     allowedDirectories: []
 
-Explicit roots must be configured in the user's external Daniel Commander config before filesystem tools can access them. Do not commit personal paths, credentials, SSH keys, tunnel identifiers, or runtime API keys to a public repository.
+Explicit filesystem roots must be configured externally before filesystem tools can access them. User-specific paths, tunnel identifiers, credentials, SSH keys, and other secrets do not belong in this repository.
 
-## Security
+## Security model
 
 Daniel Commander is intentionally powerful. Filesystem allowlists and command blocklists are guardrails, not a security sandbox.
 
-The terminal runs with the permissions of the operating-system user and can reach resources that are outside the filesystem-tool allowlist. Nested commands inside interpreters, scripts, or remote SSH command strings must not be assumed safe merely because a top-level command parser exists.
+Terminal commands execute with the permissions of the operating-system user. Shells, interpreters, scripts, and remote SSH commands can reach resources outside the filesystem-tool allowlist if the OS user can reach them.
 
-For stronger isolation, use OS permissions, a dedicated OS account, a container, or a VM. Do not expose an unauthenticated shell-capable MCP endpoint to the public Internet.
+For stronger isolation, use a dedicated OS account, container, or VM. Never expose an unauthenticated shell-capable MCP endpoint to the public Internet.
+
+## Qualification history
+
+- P0: repository/bootstrap/provenance
+- P1: ChatGPT Plus Secure MCP Tunnel entitlement gate
+- P2: headless execution core
+- P3: 17-tool MCP surface and live tunnel qualification
+- P4: real Mac, Git, tests, and existing SSH operator workflow
+- P5: TCC-aware macOS production runtime, auto-start, crash recovery, health, logs, and update flow
+
+Detailed evidence is under docs/.
