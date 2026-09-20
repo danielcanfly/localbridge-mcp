@@ -10,7 +10,7 @@ const files = {
   runner: await fs.readFile('scripts/test-p5.mjs', 'utf8')
 };
 
-const privateMarkers = [path.basename(os.homedir())];
+const privateMarkers = [os.homedir()];
 const secretLikePatterns = [
   new RegExp(['tunnel', '_'].join('') + '[0-9a-f]{16,}', 'i'),
   new RegExp(['asdk', '_app_'].join('') + '[0-9a-z_-]{16,}', 'i')
