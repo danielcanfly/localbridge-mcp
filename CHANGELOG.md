@@ -2,6 +2,25 @@
 
 All notable Daniel Commander source releases are documented here.
 
+## [0.1.0-rc.2] - 2026-09-20
+
+Second public-release candidate.
+
+### Added
+
+- Active-only macOS sleep prevention for the production tunnel lifecycle using `caffeinate -i -w <tunnel-pid>`.
+- Runtime status reporting for the validated production caffeinate relationship.
+- Original P8 lifecycle regression coverage and qualification documentation.
+
+### Fixed
+
+- Reloaded the macOS LaunchAgent after update-time environment changes so the runtime observes the deployed tunnel wrapper.
+- Updated release-candidate notes to reflect that original P8 is closed and original P9 remains open.
+
+### Known boundaries
+
+- Original P9 row-by-row qualification remains open before any final `DANIEL_COMMANDER_V0_1_PASS` declaration.
+
 ## [0.1.0-rc.1] - 2026-09-20
 
 First public-release candidate.
@@ -37,5 +56,5 @@ First public-release candidate.
 - Linux production service management is not yet implemented.
 - Filesystem allowlists and command blocklists are guardrails, not an OS sandbox.
 - The project does not provide a hosted relay or shared remote credentials.
-- The macOS runtime does not yet prevent system sleep; remote access pauses while the Mac is asleep.
+- v0.1.0-rc.1 did not yet prevent system sleep; v0.1.0-rc.2 adds active-only macOS no-sleep behavior for the production tunnel lifecycle.
 - npm publication is intentionally disabled; this release distributes source through GitHub.

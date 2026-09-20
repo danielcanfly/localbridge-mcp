@@ -16,7 +16,7 @@ fail() {
 VERSION=$(node -p "require('./package.json').version")
 PRIVATE=$(node -p "String(require('./package.json').private)")
 case "$VERSION" in
-  0.1.0-rc.1) ;;
+  0.1.0-rc.2) ;;
   *) fail "unexpected release-candidate version: $VERSION" ;;
 esac
 [ "$PRIVATE" = "true" ] || fail "npm package must remain private"

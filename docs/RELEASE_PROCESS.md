@@ -4,9 +4,9 @@ Daniel Commander uses source-only GitHub releases. npm publication remains disab
 
 ## Release candidate
 
-The first public-release candidate is:
+The current public-release candidate is:
 
-    v0.1.0-rc.1
+    v0.1.0-rc.2
 
 The package remains:
 
@@ -37,12 +37,12 @@ While the repository is private, the CodeQL job is intentionally skipped. It bec
 
 Create an annotated release-candidate tag only after the final release commit and CI are green:
 
-    git tag -a v0.1.0-rc.1 -m "Daniel Commander v0.1.0-rc.1"
-    git push origin v0.1.0-rc.1
+    git tag -a v0.1.0-rc.2 -m "Daniel Commander v0.1.0-rc.2"
+    git push origin v0.1.0-rc.2
 
 ## 4. Draft GitHub prerelease
 
-Create a draft prerelease from the reviewed notes in `docs/releases/v0.1.0-rc.1.md`.
+Create a draft prerelease from the reviewed notes in `docs/releases/v0.1.0-rc.2.md`.
 
 The release is source-only. Do not attach the locally built Runtime.app because its ad-hoc signature is specific to the local installation path and is not a notarized public binary.
 
@@ -70,4 +70,4 @@ Branch protection is intentionally opt-in because it changes the maintainer work
 
 After public security settings and CodeQL are healthy, publish the draft prerelease.
 
-A final `v0.1.0` release should be a separate owner decision after RC feedback.
+v0.1.0-rc.1 remains the pre-P8 historical RC. A final `v0.1.0` release should be a separate owner decision after RC feedback and original P9 row-by-row qualification.

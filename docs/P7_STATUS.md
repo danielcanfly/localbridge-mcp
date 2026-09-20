@@ -10,7 +10,11 @@ P7 does not change repository visibility automatically.
 
 ## Release candidate
 
-Candidate version:
+Current candidate version:
+
+    v0.1.0-rc.2
+
+Historical pre-P8 candidate:
 
     v0.1.0-rc.1
 
@@ -74,8 +78,8 @@ P7 candidate qualification passed with:
 
 After this status commit itself passes final CI and release-preflight:
 
-1. create annotated tag `v0.1.0-rc.1` on this exact commit;
-2. create a draft GitHub prerelease from `docs/releases/v0.1.0-rc.1.md`;
+1. create annotated tag `v0.1.0-rc.2` on this exact commit;
+2. create a draft GitHub prerelease from `docs/releases/v0.1.0-rc.2.md`;
 3. generate and attach the source archive checksum;
 4. update the owner's running macOS production runtime to this exact commit;
 5. verify repository visibility is still private.
@@ -110,6 +114,6 @@ The audit found no missing original P0-P7 capability, but it found phase-number 
 - `fileWriteLineLimit` was exposed as configuration but had no effect;
 - direct-start config creation did not explicitly harden the config directory to mode 0700.
 
-The audit also corrected lifecycle status: most of the original P8 work was implemented early in the later P5 runtime phase, but active-only `caffeinate` / no-sleep behavior is still missing. Original P8 therefore remains partial, and original P9 remains a separate row-by-row final qualification before any `DANIEL_COMMANDER_V0_1_PASS` declaration.
+The audit originally found original P8 partial because active-only `caffeinate` / no-sleep behavior was missing. v0.1.0-rc.2 closes that P8 lifecycle gap. Original P9 remains a separate row-by-row final qualification before any `DANIEL_COMMANDER_V0_1_PASS` declaration.
 
 See `docs/ORIGINAL_PLAN_RECONCILIATION.md` for the authority mapping.

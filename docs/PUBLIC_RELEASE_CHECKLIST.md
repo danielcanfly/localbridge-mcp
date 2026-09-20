@@ -47,7 +47,7 @@ P6 intentionally does not flip repository visibility automatically.
 
 ## P7 release-candidate gates
 
-- [ ] Package version is `0.1.0-rc.1` and `private: true` remains set.
+- [ ] Package version is `0.1.0-rc.2` and `private: true` remains set.
 - [ ] GitHub Actions references are pinned to exact commit SHAs.
 - [ ] CodeQL workflow is present and remains gated until repository visibility is public.
 - [ ] Dependabot vulnerability alerts are enabled.
@@ -55,7 +55,7 @@ P6 intentionally does not flip repository visibility automatically.
 - [ ] Issue and pull-request templates are present.
 - [ ] `./scripts/release-preflight.sh` passes from a clean main checkout.
 - [ ] Final macOS/Linux CI matrix passes.
-- [ ] Annotated tag `v0.1.0-rc.1` points at the final RC commit.
+- [ ] Annotated tag `v0.1.0-rc.2` points at the final RC commit.
 - [ ] Draft prerelease exists and remains unpublished until the owner chooses the public-visibility gate.
 - [ ] `./scripts/github-public-finalize.sh` reports `OWNER_PUBLIC_VISIBILITY_GATE_PENDING` while private.
 - [ ] After visibility becomes public, run `./scripts/github-public-finalize.sh --apply`.
@@ -65,6 +65,6 @@ P6 intentionally does not flip repository visibility automatically.
 
 - [ ] `docs/ORIGINAL_PLAN_RECONCILIATION.md` has been reviewed.
 - [ ] Original P0-P7 task content is complete regardless of later phase-number reuse.
-- [ ] Public RC notes do not claim original P8 or P9 are complete.
+- [ ] Public RC notes claim original P8 complete only for v0.1.0-rc.2 and do not claim original P9 is complete.
 - [ ] The temporary P1 `gate/` qualification scaffold is absent from the release tree.
 - [ ] MCP server protocol version equals the package version.
