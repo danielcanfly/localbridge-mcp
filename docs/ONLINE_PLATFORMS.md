@@ -24,9 +24,9 @@ Do not begin by assuming ChatGPT. The installation path, credential source, conn
 
 ## Mandatory assistant behavior
 
-After the user chooses a platform, an AI assistant must use the matching exact template from [docs/platforms/assistant-response-templates.md](platforms/assistant-response-templates.md).
+After the user chooses a platform, an AI assistant must use the matching exact template from [docs/platforms/assistant-response-templates.md](platforms/assistant-response-templates.md) and the step-by-step platform flow from [docs/platforms/platform-flow-reference.md](platforms/platform-flow-reference.md).
 
-Do **not** only ask for a tunnel ID, key, connector URL, or allowlist. First tell the user where to create or find the platform-specific credential, what permission or auth mode is expected, and what should not be pasted into chat.
+Do **not** only ask for a tunnel ID, key, connector URL, or allowlist. First tell the user where to create or find the platform-specific credential, what permission or auth mode is expected, what platform UI flow to use, and what should not be pasted into chat.
 
 Every platform response must include:
 
@@ -37,6 +37,8 @@ What this platform expects: <OpenAI tunnel / remote MCP URL / OAuth / API key / 
 Where to create or configure it:
 - <official setup URL 1>
 - <official setup URL 2>
+Platform UI flow:
+- <where to click and what values to choose>
 Credential handling:
 - <what key/token/OAuth/client setting is needed, if any>
 - <whether the user should avoid pasting secrets into chat>
@@ -49,6 +51,8 @@ Next step:
 ```
 
 If the selected platform is ChatGPT / OpenAI, always show the OpenAI Tunnels and Runtime API key links before asking for `Tunnel ID` or `Tunnels-only Runtime API key` readiness.
+
+For the ChatGPT-side app creation UI, use the verified path in `docs/platforms/chatgpt-ui-gates.md`: open `https://chatgpt.com/plugins`, enable Developer Mode, use the `+` button next to plugin search, choose `Tunnel` / `通道`, select the LocalBridge tunnel, and choose `None` / no authentication for the current LocalBridge stdio-over-tunnel path.
 
 If the selected platform is not OpenAI, do not run the OpenAI-specific installer. Explain that most non-OpenAI online platforms expect a reachable remote MCP URL and that LocalBridge needs a platform-compatible gateway, tunnel, or adapter before the platform can connect.
 
@@ -67,15 +71,15 @@ Use these terms consistently:
 
 | Online platform | Status | What the user needs | Guide |
 | --- | --- | --- | --- |
-| ChatGPT / OpenAI | **Qualified** | OpenAI Secure MCP Tunnel ID, OpenAI runtime API key with Tunnels permission, `tunnel-client`, local allowlist | Use the ChatGPT/OpenAI template. |
-| Claude.ai / Claude custom connectors | **Protocol-compatible target, not yet qualified here** | Remote MCP server URL, usually OAuth or connector auth | Use the Claude custom connector template. |
-| Claude MCP tunnels | **Protocol-compatible research path** | Claude Console tunnel access, tunnel token/domain/CA material | Use the Claude MCP tunnels template. |
-| Grok | **Protocol-compatible target, not yet qualified here** | Custom MCP connector URL and server auth if any | Use the Grok template. |
-| Perplexity | **Protocol-compatible target, not yet qualified here** | Custom remote MCP connector URL and OAuth/API-key/bearer/open auth mode | Use the Perplexity template. |
-| Gemini Apps | **Protocol-compatible target, not yet qualified here** | Custom connected app MCP server URL and Google account authorization | Use the Gemini Apps template. |
-| Gemini Enterprise | **Protocol-compatible enterprise path, not yet qualified here** | StreamableHTTP endpoint, publicly trusted TLS, OAuth/client settings where required | Use the Gemini Enterprise template. |
-| Mistral Le Chat / Work / Studio | **Protocol-compatible target, not yet qualified here** | Custom MCP connector server URL, visibility/admin settings, API key only where required | Use the Mistral template. |
-| GitHub Copilot cloud/app | **Protocol-compatible narrow path, not yet qualified here** | Repository/app MCP configuration, remote MCP endpoint, GitHub secrets/variables | Use the Copilot template. |
+| ChatGPT / OpenAI | **Qualified** | OpenAI Secure MCP Tunnel ID, OpenAI runtime API key with Tunnels permission, `tunnel-client`, local allowlist | Use the ChatGPT/OpenAI template plus `chatgpt-ui-gates.md`. |
+| Claude.ai / Claude custom connectors | **Protocol-compatible target, not yet qualified here** | Remote MCP server URL, usually OAuth or connector auth | Use the Claude custom connector template plus platform flow reference. |
+| Claude MCP tunnels | **Protocol-compatible research path** | Claude Console tunnel access, tunnel token/domain/CA material | Use the Claude MCP tunnels template plus platform flow reference. |
+| Grok | **Protocol-compatible target, not yet qualified here** | Custom MCP connector URL and server auth if any | Use the Grok template plus platform flow reference. |
+| Perplexity | **Protocol-compatible target, not yet qualified here** | Custom remote MCP connector URL and OAuth/API-key/bearer/open auth mode | Use the Perplexity template plus platform flow reference. |
+| Gemini Apps | **Protocol-compatible target, not yet qualified here** | Custom connected app MCP server URL and Google account authorization | Use the Gemini Apps template plus platform flow reference. |
+| Gemini Enterprise | **Protocol-compatible enterprise path, not yet qualified here** | StreamableHTTP endpoint, publicly trusted TLS, OAuth/client settings where required | Use the Gemini Enterprise template plus platform flow reference. |
+| Mistral Le Chat / Work / Studio | **Protocol-compatible target, not yet qualified here** | Custom MCP connector server URL, visibility/admin settings, API key only where required | Use the Mistral template plus platform flow reference. |
+| GitHub Copilot cloud/app | **Protocol-compatible narrow path, not yet qualified here** | Repository/app MCP configuration, remote MCP endpoint, GitHub secrets/variables | Use the Copilot template plus platform flow reference. |
 | Kimi web | **Research-only, not yet install-qualified here** | Kimi plugin/package path that can declare MCP servers | Use the Kimi web template and stop unless official web connector docs are available. |
 | Poe | **Not claimed** | N/A | Use the not-claimed template. |
 | MiniMax chat/web | **Not claimed** | N/A | Use the not-claimed template. |
@@ -100,9 +104,13 @@ LocalBridge MCP v0.2.1 qualifies the OpenAI Secure MCP Tunnel transport for Chat
 
 Do not tell users that an OpenAI Secure MCP Tunnel works for Grok, Perplexity, Gemini, Mistral, or Claude unless that vendor explicitly documents compatibility with OpenAI's tunnel service. Treat OpenAI tunnel IDs as OpenAI-specific.
 
-## Setup links by platform
+## Setup links and flows by platform
 
-The canonical per-platform setup links and exact response templates now live in [docs/platforms/assistant-response-templates.md](platforms/assistant-response-templates.md).
+The canonical per-platform setup links and exact response templates live in [docs/platforms/assistant-response-templates.md](platforms/assistant-response-templates.md).
+
+The step-by-step platform UI flows live in [docs/platforms/platform-flow-reference.md](platforms/platform-flow-reference.md).
+
+For ChatGPT-specific UI gates and the verified `https://chatgpt.com/plugins` plus-button flow, see [docs/platforms/chatgpt-ui-gates.md](platforms/chatgpt-ui-gates.md).
 
 For more prose explanation, see [docs/platforms/protocol-compatible-guides.md](platforms/protocol-compatible-guides.md).
 
@@ -118,6 +126,6 @@ The qualified path is ChatGPT / OpenAI Secure MCP Tunnel. Other online platforms
 
 Then:
 
-- If the user chooses **ChatGPT / OpenAI**, use the ChatGPT/OpenAI exact template, show the OpenAI setup links, then follow `docs/INSTALL_MACOS.md`.
-- If the user chooses **Claude, Grok, Perplexity, Gemini, Mistral, GitHub Copilot cloud/app, or Kimi web**, use the matching exact template, show the platform setup links first, explain the expected connector URL/auth model, and stop if the user does not already have a reachable LocalBridge remote MCP URL or gateway.
+- If the user chooses **ChatGPT / OpenAI**, use the ChatGPT/OpenAI exact template, show the OpenAI setup links, follow `docs/INSTALL_MACOS.md`, then use the ChatGPT UI gate guide to create the developer-mode app at `https://chatgpt.com/plugins`.
+- If the user chooses **Claude, Grok, Perplexity, Gemini, Mistral, GitHub Copilot cloud/app, or Kimi web**, use the matching exact template, show the platform setup links first, explain the expected connector URL/auth model and UI flow, and stop if the user does not already have a reachable LocalBridge remote MCP URL or gateway.
 - If the user chooses **Poe, MiniMax chat/web, DeepSeek web, You.com chat, or another unverified platform**, use the not-claimed template and ask for official custom MCP connector documentation before proceeding.
