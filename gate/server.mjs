@@ -34,9 +34,11 @@ function buildServer() {
       }
     },
     async ({ filename }) => {
+      console.error('[GATE_CALL] dc_test_read filename=' + filename);
       await fs.mkdir(ROOT, { recursive: true });
       const file = safePath(filename);
       const text = await fs.readFile(file, 'utf8');
+      console.error('[GATE_DONE] dc_test_read bytes=' + Buffer.byteLength(text));
       return { content: [{ type: 'text', text }] };
     }
   );
@@ -57,9 +59,11 @@ function buildServer() {
       }
     },
     async ({ filename, content }) => {
+      console.error('[GATE_CALL] dc_test_write filename=' + filename + ' bytes=' + Buffer.byteLength(content));
       await fs.mkdir(ROOT, { recursive: true });
       const file = safePath(filename);
       await fs.writeFile(file, content, { encoding: 'utf8', mode: 0o600 });
+      console.error('[GATE_DONE] dc_test_write filename=' + filename);
       return {
         content: [{ type: 'text', text: 'WROTE ' + filename + ' (' + Buffer.byteLength(content) + ' bytes)' }]
       };
