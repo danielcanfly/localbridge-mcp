@@ -28,7 +28,7 @@ await fs.mkdir(configDir, { recursive: true });
 await fs.mkdir(workspace, { recursive: true });
 await fs.writeFile(path.join(configDir, 'config.json'), JSON.stringify({
   blockedCommands: ['sudo', 'su', 'shutdown', 'reboot', 'dd', 'mkfs'],
-  defaultShell: process.env.SHELL || '/bin/zsh',
+  defaultShell: process.env.SHELL || (process.platform === 'darwin' ? '/bin/zsh' : '/bin/sh'),
   allowedDirectories: [workspace],
   fileReadLineLimit: 1000,
   fileWriteLineLimit: 2000

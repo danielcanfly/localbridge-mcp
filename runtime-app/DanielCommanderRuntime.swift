@@ -33,7 +33,22 @@ let fm = FileManager.default
 let env = ProcessInfo.processInfo.environment
 let home = fm.homeDirectoryForCurrentUser
 let profile = env["DANIEL_COMMANDER_PROFILE"] ?? "daniel-prod"
-let tunnelClient = env["DANIEL_COMMANDER_TUNNEL_CLIENT"] ?? "/opt/homebrew/bin/tunnel-client"
+
+func resolveExecutable(override: String?, name: String) -> String {
+    if let override, !override.isEmpty {
+        return override
+    }
+    let searchPath = env["PATH"] ?? "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+    for directory in searchPath.split(separator: ":").map(String.init) {
+        let candidate = URL(fileURLWithPath: directory).appendingPathComponent(name).path
+        if fm.isExecutableFile(atPath: candidate) {
+            return candidate
+        }
+    }
+    return name
+}
+
+let tunnelClient = resolveExecutable(override: env["DANIEL_COMMANDER_TUNNEL_CLIENT"], name: "tunnel-client")
 let stateDir = URL(fileURLWithPath: env["DANIEL_COMMANDER_STATE_DIR"] ?? home.appendingPathComponent(".local/state/daniel-commander").path)
 let logDir = URL(fileURLWithPath: env["DANIEL_COMMANDER_LOG_DIR"] ?? home.appendingPathComponent("Library/Logs/DanielCommander").path)
 let runtimeRoot = URL(fileURLWithPath: env["DANIEL_COMMANDER_RUNTIME_ROOT"] ?? home.appendingPathComponent(".local/share/daniel-commander/runtime").path)
@@ -277,7 +292,7 @@ while !state.isStopping() {
     process.arguments = ["run", "--profile", profile, "--pid.file", tunnelPid.path]
     var childEnv = env
     childEnv["HOME"] = home.path
-    childEnv["PATH"] = "/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+    childEnv["PATH"] = env["PATH"] ?? "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
     process.environment = childEnv
 
     ensureDirectory(logDir)

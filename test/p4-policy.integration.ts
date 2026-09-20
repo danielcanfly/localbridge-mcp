@@ -23,7 +23,7 @@ console.log('P4_FAIL_CLOSED_DEFAULT_PASS');
 
 await configManager.updateConfig({
   allowedDirectories: [workspace],
-  defaultShell: process.platform === 'win32' ? 'powershell.exe' : '/bin/zsh',
+  defaultShell: process.platform === 'win32' ? 'powershell.exe' : (process.platform === 'darwin' ? '/bin/zsh' : '/bin/sh'),
   blockedCommands: ['sudo', 'shutdown', 'reboot']
 });
 

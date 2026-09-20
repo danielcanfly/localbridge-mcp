@@ -2,20 +2,52 @@
 set -eu
 
 LABEL="${DANIEL_COMMANDER_LAUNCHD_LABEL:-com.danielcanfly.daniel-commander}"
-BUNDLE_ID="com.danielcanfly.daniel-commander.runtime"
+BUNDLE_ID="${DANIEL_COMMANDER_BUNDLE_ID:-com.danielcanfly.daniel-commander.runtime}"
 PROFILE="${DANIEL_COMMANDER_PROFILE:-daniel-prod}"
+HEALTH_LISTEN_ADDR="${DANIEL_COMMANDER_HEALTH_LISTEN_ADDR:-127.0.0.1:43127}"
 DOMAIN="gui/$(id -u)"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 STATUS="$SCRIPT_DIR/macos-runtime-status.sh"
-PROFILE_FILE="$HOME/.config/tunnel-client/$PROFILE.yaml"
+PROFILE_DIR="${TUNNEL_CLIENT_PROFILE_DIR:-$HOME/.config/tunnel-client}"
+PROFILE_FILE="$PROFILE_DIR/$PROFILE.yaml"
 STATE_DIR="${DANIEL_COMMANDER_STATE_DIR:-$HOME/.local/state/daniel-commander}"
 LOG_DIR="${DANIEL_COMMANDER_LOG_DIR:-$HOME/Library/Logs/DanielCommander}"
 RUNTIME_ROOT="${DANIEL_COMMANDER_RUNTIME_ROOT:-$HOME/.local/share/daniel-commander/runtime}"
-APP="$HOME/Applications/Daniel Commander Runtime.app"
+APP="${DANIEL_COMMANDER_RUNTIME_APP:-$HOME/Applications/Daniel Commander Runtime.app}"
 APP_EXE="$APP/Contents/MacOS/DanielCommanderRuntime"
 APP_SOURCE="$REPO_ROOT/runtime-app/DanielCommanderRuntime.swift"
+
+# shellcheck source=macos-common.sh
+. "$SCRIPT_DIR/macos-common.sh"
+
+discover_tools() {
+  NODE_BIN=$(dc_find_tool "${DANIEL_COMMANDER_NODE:-}" node) || { echo "node not found"; exit 2; }
+
+  if [ -n "${DANIEL_COMMANDER_NPM:-}" ]; then
+    NPM_BIN=$(dc_find_tool "$DANIEL_COMMANDER_NPM" npm) || { echo "npm not found"; exit 2; }
+  elif [ -x "$(dirname "$NODE_BIN")/npm" ]; then
+    NPM_BIN="$(dirname "$NODE_BIN")/npm"
+  else
+    NPM_BIN=$(dc_find_tool "" npm) || { echo "npm not found"; exit 2; }
+  fi
+
+  TUNNEL_CLIENT_BIN=$(dc_find_tool "${DANIEL_COMMANDER_TUNNEL_CLIENT:-}" tunnel-client) || {
+    echo "tunnel-client not found; set DANIEL_COMMANDER_TUNNEL_CLIENT to its absolute path" >&2
+    exit 2
+  }
+
+  SWIFTC_BIN=$(dc_find_tool "${DANIEL_COMMANDER_SWIFTC:-}" swiftc) || {
+    echo "swiftc not found; install Xcode Command Line Tools" >&2
+    exit 2
+  }
+
+  NODE_MAJOR=$(dc_node_major "$NODE_BIN")
+  [ "$NODE_MAJOR" -ge 20 ] || { echo "Node.js >=20 required; found $NODE_MAJOR"; exit 2; }
+
+  RUNTIME_PATH=$(dc_runtime_path "$NODE_BIN" "$TUNNEL_CLIENT_BIN")
+}
 
 deploy_runtime() {
   next="$RUNTIME_ROOT.next.$$"
@@ -28,7 +60,7 @@ deploy_runtime() {
   /usr/bin/ditto "$REPO_ROOT/node_modules" "$next/node_modules"
   (
     cd "$next"
-    /opt/homebrew/bin/npm prune --omit=dev --ignore-scripts --no-audit --no-fund >/dev/null
+    "$NPM_BIN" prune --omit=dev --ignore-scripts --no-audit --no-fund >/dev/null
   )
 
   source_commit=$(git -C "$REPO_ROOT" rev-parse HEAD)
@@ -48,7 +80,7 @@ build_app_if_missing() {
   fi
 
   mkdir -p "$APP/Contents/MacOS"
-  /usr/bin/swiftc "$APP_SOURCE" -o "$APP_EXE"
+  "$SWIFTC_BIN" "$APP_SOURCE" -o "$APP_EXE"
   /usr/bin/python3 - "$APP/Contents/Info.plist" "$BUNDLE_ID" <<'PY'
 import plistlib, sys
 path, bundle_id = sys.argv[1:]
@@ -72,13 +104,15 @@ PY
 }
 
 patch_profile_runtime() {
-  /usr/bin/python3 - "$PROFILE_FILE" "$RUNTIME_ROOT" <<'PY'
-import re, sys
+  /usr/bin/python3 - "$PROFILE_FILE" "$RUNTIME_ROOT" "$NODE_BIN" <<'PY'
+import json, re, shlex, sys
 from pathlib import Path
 profile = Path(sys.argv[1])
 runtime = Path(sys.argv[2])
+node = sys.argv[3]
+command = f"{shlex.quote(node)} {shlex.quote(str(runtime / 'dist/src/index.js'))}"
+replacement = "      command: " + json.dumps(command)
 text = profile.read_text()
-replacement = f'      command: "/opt/homebrew/bin/node {runtime}/dist/src/index.js"'
 updated, count = re.subn(r'(?m)^\s*command:\s*".*dist/src/index\.js"\s*$', replacement, text, count=1)
 if count != 1:
     raise SystemExit("could not locate MCP command in production profile")
@@ -88,23 +122,31 @@ PY
 }
 
 write_plist() {
-  /usr/bin/python3 - "$PLIST" "$LABEL" "$APP_EXE" "$RUNTIME_ROOT" "$PROFILE" "$STATE_DIR" "$LOG_DIR" <<'PY'
+  /usr/bin/python3 - "$PLIST" "$LABEL" "$APP_EXE" "$RUNTIME_ROOT" "$PROFILE" "$PROFILE_DIR" "$STATE_DIR" "$LOG_DIR" "$TUNNEL_CLIENT_BIN" "$RUNTIME_PATH" "$HEALTH_LISTEN_ADDR" <<'PY'
 import plistlib
 import sys
 from pathlib import Path
 
-plist_path, label, app_exe, runtime_root, profile, state_dir, log_dir = sys.argv[1:]
+(plist_path, label, app_exe, runtime_root, profile, profile_dir, state_dir, log_dir,
+ tunnel_client, runtime_path, health_addr) = sys.argv[1:]
+
 data = {
     "Label": label,
     "ProgramArguments": [app_exe],
     "WorkingDirectory": runtime_root,
     "EnvironmentVariables": {
-        "PATH": "/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+        "PATH": runtime_path,
         "DANIEL_COMMANDER_PROFILE": profile,
+        "TUNNEL_CLIENT_PROFILE_DIR": profile_dir,
         "DANIEL_COMMANDER_STATE_DIR": state_dir,
         "DANIEL_COMMANDER_LOG_DIR": log_dir,
         "DANIEL_COMMANDER_RUNTIME_ROOT": runtime_root,
-        "DANIEL_COMMANDER_TUNNEL_CLIENT": "/opt/homebrew/bin/tunnel-client",
+        "DANIEL_COMMANDER_TUNNEL_CLIENT": tunnel_client,
+        "HEALTH_LISTEN_ADDR": health_addr,
+        "HEALTH_URL_FILE": str(Path(state_dir) / "health-url"),
+        "LOG_FILE": str(Path(log_dir) / "tunnel-client.jsonl"),
+        "LOG_LEVEL": "info",
+        "LOG_FORMAT": "json",
     },
     "RunAtLoad": True,
     "KeepAlive": {"SuccessfulExit": False},
@@ -121,8 +163,8 @@ PY
 }
 
 preflight_install() {
-  [ -x /opt/homebrew/bin/tunnel-client ] || { echo "tunnel-client missing"; exit 2; }
-  [ -x /opt/homebrew/bin/node ] || { echo "Homebrew node missing"; exit 2; }
+  [ "$(uname -s)" = "Darwin" ] || { echo "macOS service install requires Darwin"; exit 2; }
+  discover_tools
   [ -f "$PROFILE_FILE" ] || { echo "production profile missing: $PROFILE_FILE"; exit 2; }
   [ -f "$APP_SOURCE" ] || { echo "runtime app source missing"; exit 2; }
   mkdir -p "$STATE_DIR" "$LOG_DIR" "$HOME/Library/LaunchAgents" "$HOME/Applications"
@@ -133,11 +175,11 @@ preflight_install() {
 install_service() {
   preflight_install
   launchctl bootout "$DOMAIN/$LABEL" >/dev/null 2>&1 || true
-  /opt/homebrew/bin/npm --prefix "$REPO_ROOT" run build >/dev/null
+  "$NPM_BIN" --prefix "$REPO_ROOT" run build >/dev/null
   deploy_runtime
   build_app_if_missing
   patch_profile_runtime
-  /opt/homebrew/bin/tunnel-client doctor --profile "$PROFILE" --health.listen-addr 127.0.0.1:0 >/dev/null
+  "$TUNNEL_CLIENT_BIN" doctor --profile "$PROFILE" --profile-dir "$PROFILE_DIR" --health.listen-addr 127.0.0.1:0 >/dev/null
   write_plist
   rm -f "$STATE_DIR/tunnel-client.pid" "$STATE_DIR/health-url" "$STATE_DIR/tcc-status"
   launchctl bootstrap "$DOMAIN" "$PLIST"
@@ -147,10 +189,11 @@ install_service() {
 
 update_runtime() {
   preflight_install
-  /opt/homebrew/bin/npm --prefix "$REPO_ROOT" run build >/dev/null
+  "$NPM_BIN" --prefix "$REPO_ROOT" run build >/dev/null
   deploy_runtime
   patch_profile_runtime
-  /opt/homebrew/bin/tunnel-client doctor --profile "$PROFILE" --health.listen-addr 127.0.0.1:0 >/dev/null
+  "$TUNNEL_CLIENT_BIN" doctor --profile "$PROFILE" --profile-dir "$PROFILE_DIR" --health.listen-addr 127.0.0.1:0 >/dev/null
+  write_plist
   if launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1; then
     launchctl kickstart -k "$DOMAIN/$LABEL"
   fi

@@ -1,0 +1,23 @@
+{
+  "allowedDirectories": [],
+  "blockedCommands": [
+    "mkfs",
+    "format",
+    "mount",
+    "umount",
+    "fdisk",
+    "dd",
+    "parted",
+    "diskpart",
+    "sudo",
+    "su",
+    "passwd",
+    "shutdown",
+    "reboot",
+    "halt",
+    "poweroff"
+  ],
+  "defaultShell": "/bin/sh",
+  "fileReadLineLimit": 1000,
+  "fileWriteLineLimit": 2000
+}
