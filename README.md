@@ -194,10 +194,14 @@ Read README.md and docs/INSTALL_MACOS.md first. Do not invent credentials. Do no
 
 Target: macOS persistent ChatGPT runtime.
 
-I will provide separately:
+Before running installation commands, list what I need to prepare and stop if anything is missing.
+
+I will provide or confirm separately:
 - my OpenAI Secure MCP Tunnel ID;
-- my own OpenAI API key with Tunnels permission only;
-- the local directories I want LocalBridge MCP to access.
+- my own OpenAI API key with Tunnels permission only, stored locally and not pasted into chat;
+- the local directories I want LocalBridge MCP to access;
+- whether tunnel-client is already installed;
+- macOS privacy approvals when LocalBridge MCP Runtime.app asks for access.
 
 Use the repository scripts instead of hand-writing a service:
 1. clone the repo;
@@ -208,7 +212,7 @@ Use the repository scripts instead of hand-writing a service:
 6. run tunnel-client doctor for the generated profile;
 7. verify scripts/macos-service.sh status returns HEALTH=ok and READY=ok.
 
-Stop and ask me if any credential, tunnel, macOS permission, or allowlist is missing.
+Stop and ask me if any credential, tunnel, tunnel-client installation, macOS permission, or allowlist is missing.
 ```
 
 The assistant can perform local setup work, but every user must provide their own tunnel, key, and filesystem boundaries.
