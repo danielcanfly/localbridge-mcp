@@ -28,7 +28,149 @@ If an AI assistant is installing this for you, it should stop and ask when any r
 
 For local stdio-only use, you can skip the tunnel ID, tunnel API key, and `tunnel-client`. You still need to choose an allowlist.
 
-## 3. Clone and configure the core
+## 3. Copy-paste bootstrap when the assistant has no local shell tool
+
+Some AI sessions can read this repository but cannot operate the user's Mac directly. In that case, the assistant should not merely stop after explaining the limitation. It should provide a single copy-paste Terminal script that:
+
+- asks the user for the tunnel ID interactively;
+- asks for the filesystem allowlist interactively, with a narrow default;
+- asks for the Tunnels-only API key with hidden input using `read -s`;
+- writes the key to `~/.config/localbridge-mcp/tunnel-runtime-key` with mode `600` without printing it;
+- checks Node.js, npm, Xcode Command Line Tools, `git`, and `tunnel-client`;
+- clones or updates LocalBridge MCP at the requested release tag;
+- runs `npm ci` and `npm test`;
+- runs `scripts/setup-macos.sh` with the user-provided values;
+- verifies `scripts/macos-service.sh status`;
+- tells the user to paste the terminal output back into the chat.
+
+The assistant should not ask the user to edit placeholders in the command. The command itself should prompt for user-specific values.
+
+Paste-and-run bootstrap for the latest documented release:
+
+```bash
+set -euo pipefail
+
+RELEASE_TAG="v0.2.1"
+REPO_URL="https://github.com/danielcanfly/localbridge-mcp.git"
+DEFAULT_WORKSPACE="$HOME/Documents/GitHub"
+DEFAULT_ALLOWLIST="$HOME/Documents/GitHub"
+KEY_FILE="$HOME/.config/localbridge-mcp/tunnel-runtime-key"
+
+cleanup_secret() {
+  stty echo 2>/dev/null || true
+  unset LOCALBRIDGE_TUNNELS_API_KEY 2>/dev/null || true
+}
+trap cleanup_secret EXIT
+
+need_cmd() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "MISSING_REQUIRED_COMMAND: $1"
+    exit 1
+  fi
+}
+
+need_cmd git
+need_cmd node
+need_cmd npm
+need_cmd xcode-select
+
+if ! xcode-select -p >/dev/null 2>&1; then
+  echo "MISSING_XCODE_COMMAND_LINE_TOOLS"
+  echo "Install them with: xcode-select --install"
+  exit 1
+fi
+
+if command -v tunnel-client >/dev/null 2>&1; then
+  TUNNEL_CLIENT_BIN="$(command -v tunnel-client)"
+elif [ -x /opt/homebrew/bin/tunnel-client ]; then
+  TUNNEL_CLIENT_BIN="/opt/homebrew/bin/tunnel-client"
+elif [ -x /usr/local/bin/tunnel-client ]; then
+  TUNNEL_CLIENT_BIN="/usr/local/bin/tunnel-client"
+else
+  echo "MISSING_TUNNEL_CLIENT"
+  echo "Install tunnel-client first, then rerun this script."
+  exit 1
+fi
+
+printf 'OpenAI Secure MCP Tunnel ID, starts with tunnel_: '
+IFS= read -r LOCALBRIDGE_TUNNEL_ID
+case "$LOCALBRIDGE_TUNNEL_ID" in
+  tunnel_*) ;;
+  *) echo "INVALID_TUNNEL_ID"; exit 1 ;;
+esac
+
+printf 'Filesystem allowlist [%s]: ' "$DEFAULT_ALLOWLIST"
+IFS= read -r LOCALBRIDGE_ALLOWLIST
+LOCALBRIDGE_ALLOWLIST="${LOCALBRIDGE_ALLOWLIST:-$DEFAULT_ALLOWLIST}"
+
+if [ ! -d "$LOCALBRIDGE_ALLOWLIST" ]; then
+  echo "ALLOWLIST_DIRECTORY_MISSING: $LOCALBRIDGE_ALLOWLIST"
+  echo "Create the directory or rerun with a different allowlist."
+  exit 1
+fi
+
+printf 'Workspace for cloning/updating LocalBridge MCP [%s]: ' "$DEFAULT_WORKSPACE"
+IFS= read -r LOCALBRIDGE_WORKSPACE
+LOCALBRIDGE_WORKSPACE="${LOCALBRIDGE_WORKSPACE:-$DEFAULT_WORKSPACE}"
+mkdir -p "$LOCALBRIDGE_WORKSPACE"
+
+printf 'Paste Tunnels-only API key, input hidden: '
+stty -echo
+IFS= read -r LOCALBRIDGE_TUNNELS_API_KEY
+stty echo
+printf '\n'
+
+if [ -z "$LOCALBRIDGE_TUNNELS_API_KEY" ]; then
+  echo "EMPTY_API_KEY"
+  exit 1
+fi
+
+mkdir -p "$(dirname "$KEY_FILE")"
+chmod 700 "$(dirname "$KEY_FILE")"
+printf '%s' "$LOCALBRIDGE_TUNNELS_API_KEY" > "$KEY_FILE"
+chmod 600 "$KEY_FILE"
+unset LOCALBRIDGE_TUNNELS_API_KEY
+
+if [ ! -s "$KEY_FILE" ]; then
+  echo "KEY_FILE_MISSING_OR_EMPTY"
+  exit 1
+fi
+
+REPO_DIR="$LOCALBRIDGE_WORKSPACE/localbridge-mcp"
+if [ -d "$REPO_DIR/.git" ]; then
+  cd "$REPO_DIR"
+  git fetch --tags origin
+else
+  git clone --branch "$RELEASE_TAG" "$REPO_URL" "$REPO_DIR"
+  cd "$REPO_DIR"
+fi
+
+git checkout "$RELEASE_TAG"
+
+node -v
+npm -v
+"$TUNNEL_CLIENT_BIN" --version || true
+
+npm ci
+npm test
+
+./scripts/setup-macos.sh \
+  --allow "$LOCALBRIDGE_ALLOWLIST" \
+  --tunnel-id "$LOCALBRIDGE_TUNNEL_ID" \
+  --api-key-ref "file:$KEY_FILE"
+
+"$TUNNEL_CLIENT_BIN" doctor \
+  --profile localbridge-prod \
+  --profile-dir "$HOME/.config/tunnel-client" \
+  --health.listen-addr 127.0.0.1:0
+
+./scripts/macos-service.sh status
+
+echo "LOCALBRIDGE_BOOTSTRAP_DONE"
+echo "Paste this terminal output back into the AI session for review."
+```
+
+## 4. Clone and configure the core
 
 Choose one or more directories the MCP filesystem tools may access:
 
@@ -42,7 +184,7 @@ Inspect the result:
 
     ./scripts/doctor.sh
 
-## 4. Local MCP clients
+## 5. Local MCP clients
 
 The core setup prints a stdio command in this form:
 
@@ -52,7 +194,7 @@ Register that command in any MCP client that supports a local stdio server.
 
 No tunnel is needed for this mode.
 
-## 5. Prepare remote credentials
+## 6. Prepare remote credentials
 
 For the persistent ChatGPT path you need your own OpenAI Secure MCP Tunnel configuration.
 
@@ -66,7 +208,7 @@ Store the control-plane credential in a private file rather than in a shell hist
 
 Do not put the credential in this repository.
 
-## 6. Configure the macOS remote runtime
+## 7. Configure the macOS remote runtime
 
     ./scripts/setup-macos.sh \
       --allow "$HOME/Projects" \
@@ -84,7 +226,7 @@ The script:
 
 If macOS asks LocalBridge MCP Runtime for Documents/Desktop access, approve only the folders you intend LocalBridge MCP to operate on.
 
-## 7. Verify
+## 8. Verify
 
     ./scripts/macos-service.sh status
 
@@ -100,7 +242,7 @@ You can also run:
 
     ./scripts/doctor.sh
 
-## 8. Update
+## 9. Update
 
 After pulling source changes:
 
@@ -109,7 +251,7 @@ After pulling source changes:
 
 The normal update path replaces the deployed JavaScript runtime without rebuilding Runtime.app.
 
-## 9. Stop or uninstall the service
+## 10. Stop or uninstall the service
 
 Temporarily stop it:
 
