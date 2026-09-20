@@ -41,7 +41,7 @@ try {
   const edit = await core.editBlock(crlfPath, 'target', 'TARGET');
   assert.deepEqual({ replacements: edit.replacements, fuzzy: edit.fuzzy }, { replacements: 1, fuzzy: false });
   assert.equal((await fs.readFile(crlfPath)).toString('utf8'), 'first\r\nTARGET\r\nlast\r\n');
-  console.log('ORIGINAL_P9_LINE_ENDING_PRESERVATION_PASS');
+  console.log('FINAL_LINE_ENDING_PRESERVATION_PASS');
 
   const searchDir = path.join(workspace, 'search');
   await fs.mkdir(searchDir);
@@ -130,7 +130,7 @@ try {
   assert.equal(core.searchManager.stopSearch(cancel.sessionId), true);
   assert.equal(core.searchManager.readSearchResults(cancel.sessionId, 0, 10).isComplete, true);
   assert.equal(core.searchManager.stopSearch('search_missing_for_p9'), false);
-  console.log('ORIGINAL_P9_SEARCH_MATRIX_PASS');
+  console.log('FINAL_SEARCH_MATRIX_PASS');
 
   const completed = await core.startProcess(
     `node -e "console.log('P9_STDOUT_READY'); console.error('P9_STDERR_READY')"`,
@@ -145,7 +145,7 @@ try {
   assert(core.listSessions().completed.some((s: any) => s.pid === completed.pid && s.exitCode === 0));
   completedOutput = core.readProcessOutput(completed.pid, 0, 20);
   assert.match(completedOutput.lines.join('\n'), /P9_STDOUT_READY|P9_STDERR_READY/);
-  console.log('ORIGINAL_P9_TERMINAL_STDERR_COMPLETED_READABILITY_PASS');
+  console.log('FINAL_TERMINAL_STDERR_COMPLETED_READABILITY_PASS');
 
   const slowCommand = (label: string) =>
     `node -e "console.log('${label}_READY'); setInterval(()=>{}, 1000)"`;
@@ -162,7 +162,7 @@ try {
   assert.equal(core.forceTerminate(second.pid), true);
   const gone = await waitUntil(() => !core.listSessions().active.some((s: any) => s.pid === first.pid || s.pid === second.pid));
   assert.equal(gone, true);
-  console.log('ORIGINAL_P9_MULTIPLE_SIMULTANEOUS_SESSIONS_PASS');
+  console.log('FINAL_MULTIPLE_SIMULTANEOUS_SESSIONS_PASS');
 } finally {
   await fs.rm(sandbox, { recursive: true, force: true });
 }

@@ -8,7 +8,7 @@ const files = {
   status: await fs.readFile('scripts/macos-runtime-status.sh', 'utf8'),
   service: await fs.readFile('scripts/macos-service.sh', 'utf8'),
   wrapper: await fs.readFile('scripts/macos-tunnel-wrapper.sh', 'utf8'),
-  runner: await fs.readFile('scripts/test-p5.mjs', 'utf8')
+  runner: await fs.readFile('scripts/test-runtime.mjs', 'utf8')
 };
 
 const privateMarkers = [os.homedir()];
@@ -34,17 +34,17 @@ assert.match(files.app, /TUNNEL_CHILD_EXIT/);
 assert.match(files.app, /rotateLogs\(\)/);
 assert.match(files.app, /SIGTERM/);
 assert.match(files.app, /posixPermissions: 0o600/);
-console.log('P5_PRIVATE_RUNTIME_FILES_PASS');
-console.log('P5_RUNTIME_APP_SUPERVISOR_PASS');
-console.log('P5_TCC_PREFLIGHT_CONTRACT_PASS');
+console.log('RUNTIME_PRIVATE_RUNTIME_FILES_PASS');
+console.log('RUNTIME_RUNTIME_APP_SUPERVISOR_PASS');
+console.log('RUNTIME_TCC_PREFLIGHT_CONTRACT_PASS');
 
 assert.match(files.app, /cleanupStaleTunnel\(\)/);
 assert.match(files.app, /STALE_TUNNEL_CLEANUP/);
 assert.match(files.app, /STALE_TUNNEL_REFUSED/);
 assert.match(files.app, /processCommand\(pid:/);
 assert.match(files.app, /var tccPreflightPassed = false/);
-console.log('P5_ORPHAN_CLEANUP_CONTRACT_PASS');
-console.log('P5_LOG_ROTATION_CONTRACT_PASS');
+console.log('RUNTIME_ORPHAN_CLEANUP_CONTRACT_PASS');
+console.log('RUNTIME_LOG_ROTATION_CONTRACT_PASS');
 
 assert.match(files.service, /\.local\/share\/daniel-commander\/runtime/);
 assert.match(files.service, /prune --omit=dev/);
@@ -67,21 +67,21 @@ assert.match(files.wrapper, /CAFFEINATE_PID_FILE/);
 assert.match(files.wrapper, /trap forward_stop TERM INT/);
 assert.match(files.status, /CAFFEINATE_COUNT=/);
 assert.match(files.status, /CAFFEINATE_PID=/);
-console.log('P5_ACTIVE_ONLY_CAFFEINATE_CONTRACT_PASS');
-console.log('P5_LIVE_DOCTOR_OVERRIDE_PASS');
-console.log('P5_DEPLOY_BUNDLE_CONTRACT_PASS');
-console.log('P5_LAUNCHD_APP_CONTRACT_PASS');
+console.log('RUNTIME_ACTIVE_ONLY_CAFFEINATE_CONTRACT_PASS');
+console.log('RUNTIME_LIVE_DOCTOR_OVERRIDE_PASS');
+console.log('RUNTIME_DEPLOY_BUNDLE_CONTRACT_PASS');
+console.log('RUNTIME_LAUNCHD_APP_CONTRACT_PASS');
 
 assert.match(files.status, /TCC_PREFLIGHT=/);
 assert.match(files.status, /\/healthz/);
 assert.match(files.status, /\/readyz/);
 assert.match(files.status, /RUNTIME_COMMIT=/);
-console.log('P5_HEALTH_STATUS_CONTRACT_PASS');
-console.log('P5_REPO_PRIVACY_CONTRACT_PASS');
+console.log('RUNTIME_HEALTH_STATUS_CONTRACT_PASS');
+console.log('RUNTIME_REPO_PRIVACY_CONTRACT_PASS');
 
 const pkg = JSON.parse(await fs.readFile(path.resolve('package.json'), 'utf8'));
-assert.match(pkg.scripts.test, /test:p5/);
-assert.match(pkg.scripts['test:p5'], /scripts\/test-p5\.mjs/);
+assert.match(pkg.scripts.test, /test:runtime/);
+assert.match(pkg.scripts['test:runtime'], /scripts\/test-runtime\.mjs/);
 assert.match(files.runner, /process\.platform === 'darwin'/);
 assert.match(files.runner, /swiftc/);
-console.log('P5_TEST_WIRING_PASS');
+console.log('RUNTIME_TEST_WIRING_PASS');

@@ -18,7 +18,7 @@ assert.match(service, /DANIEL_COMMANDER_REAL_TUNNEL_CLIENT": tunnel_client/);
 assert.match(status, /caffeinate\.pid/);
 assert.match(status, /CAFFEINATE_COUNT=/);
 assert.match(status, /CAFFEINATE_PID=/);
-console.log('ORIGINAL_P8_ACTIVE_ONLY_CONTRACT_PASS');
+console.log('LIFECYCLE_ACTIVE_ONLY_CONTRACT_PASS');
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -83,7 +83,7 @@ if (process.platform === 'darwin') {
     const pidFile = path.join(stateDir, 'caffeinate.pid');
     const persistedPid = Number((await fs.readFile(pidFile, 'utf8')).trim());
     assert.equal(persistedPid, caffeinatePid, 'caffeinate pid file did not match live process');
-    console.log('ORIGINAL_P8_CAFFEINATE_CHILD_LIVE_PASS');
+    console.log('LIFECYCLE_CAFFEINATE_CHILD_LIVE_PASS');
   } finally {
     if (child.exitCode === null && child.signalCode === null) {
       child.kill('SIGTERM');
@@ -109,7 +109,7 @@ if (process.platform === 'darwin') {
     'caffeinate pid file survived shutdown'
   );
   await fs.rm(stateDir, { recursive: true, force: true });
-  console.log('ORIGINAL_P8_CAFFEINATE_CLEANUP_LIVE_PASS');
+  console.log('LIFECYCLE_CAFFEINATE_CLEANUP_LIVE_PASS');
 } else {
-  console.log('ORIGINAL_P8_CAFFEINATE_LIVE_SKIPPED_NON_DARWIN');
+  console.log('LIFECYCLE_CAFFEINATE_LIVE_SKIPPED_NON_DARWIN');
 }

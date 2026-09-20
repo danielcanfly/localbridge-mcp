@@ -79,7 +79,7 @@ P7 candidate qualification passed with:
 After this status commit itself passes final CI and release-preflight:
 
 1. create annotated tag `v0.1.0-rc.2` on this exact commit;
-2. create a draft GitHub prerelease from `docs/releases/v0.1.0-rc.2.md`;
+2. create a draft GitHub prerelease from `docs/qualification/releases/v0.1.0-rc.2.md`;
 3. generate and attach the source archive checksum;
 4. update the owner's running macOS production runtime to this exact commit;
 5. verify repository visibility is still private.
@@ -104,7 +104,7 @@ P7 final source state: `READY_FOR_OWNER_PUBLIC_VISIBILITY_GATE`.
 
 ## Original-plan reconciliation audit
 
-Before public visibility, the frozen original P0-P9 construction plan was re-audited against the repository, tests, GitHub release surface, and live production runtime.
+Before public visibility, the frozen original construction matrix construction plan was re-audited against the repository, tests, GitHub release surface, and live production runtime.
 
 The audit found no missing original P0-P7 capability, but it found phase-number drift and five release-quality defects that were repaired before publication:
 
@@ -114,6 +114,6 @@ The audit found no missing original P0-P7 capability, but it found phase-number 
 - `fileWriteLineLimit` was exposed as configuration but had no effect;
 - direct-start config creation did not explicitly harden the config directory to mode 0700.
 
-The audit originally found original P8 partial because active-only `caffeinate` / no-sleep behavior was missing. v0.1.0-rc.2 closes that P8 lifecycle gap. Original P9 remains a separate row-by-row final qualification before any `DANIEL_COMMANDER_V0_1_PASS` declaration.
+The audit originally found lifecycle qualification partial because active-only `caffeinate` / no-sleep behavior was missing. v0.1.0-rc.2 closes that P8 lifecycle gap. Final qualification remains a separate row-by-row final qualification before any `DANIEL_COMMANDER_V0_1_PASS` declaration.
 
-See `docs/ORIGINAL_PLAN_RECONCILIATION.md` for the authority mapping.
+See `docs/qualification/CONSTRUCTION_MATRIX.md` for the authority mapping.

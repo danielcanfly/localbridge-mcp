@@ -47,23 +47,23 @@ function safe<TArgs>(fn: (args: TArgs) => Promise<ToolResult> | ToolResult) {
 }
 
 export const DANIEL_COMMANDER_TOOL_NAMES = [
-  'read_file',
-  'read_multiple_files',
-  'list_directory',
-  'get_file_info',
-  'write_file',
-  'create_directory',
-  'move_file',
-  'edit_block',
-  'start_search',
-  'get_more_search_results',
-  'stop_search',
-  'list_searches',
-  'start_process',
-  'read_process_output',
-  'interact_with_process',
-  'list_sessions',
-  'force_terminate'
+  'dc_read_text',
+  'dc_read_many_texts',
+  'dc_list_entries',
+  'dc_stat_path',
+  'dc_write_text',
+  'dc_make_directory',
+  'dc_move_path',
+  'dc_patch_text_block',
+  'dc_search_start',
+  'dc_search_read',
+  'dc_search_cancel',
+  'dc_search_sessions',
+  'dc_run_shell',
+  'dc_shell_output',
+  'dc_shell_input',
+  'dc_shell_sessions',
+  'dc_shell_kill'
 ] as const;
 
 export function createDanielCommanderServer(): McpServer {
@@ -73,36 +73,36 @@ export function createDanielCommanderServer(): McpServer {
   });
 
   server.registerTool(
-    'read_file',
+    'dc_read_text',
     {
-      description: 'Read a UTF-8 text file inside configured allowed directories. Supports line offset and length.',
+      description: 'Read a UTF-8 text file inside configured allowed directories. Supports line offset and line count.',
       inputSchema: z.object({
-        path: z.string().min(1),
-        offset: z.number().int().default(0),
-        length: z.number().int().positive().max(10000).optional()
+        file_path: z.string().min(1),
+        line_offset: z.number().int().default(0),
+        line_count: z.number().int().positive().max(10000).optional()
       }),
-      annotations: { title: 'Read file', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'Daniel read text', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ path, offset, length }) => textResult(await readFile(path, offset, length)))
+    safe(async ({ file_path, line_offset, line_count }) => textResult(await readFile(file_path, line_offset, line_count)))
   );
 
   server.registerTool(
-    'read_multiple_files',
+    'dc_read_many_texts',
     {
       description: 'Read multiple UTF-8 text files inside configured allowed directories in one call.',
       inputSchema: z.object({
-        paths: z.array(z.string().min(1)).min(1).max(50),
-        offset: z.number().int().default(0),
-        length: z.number().int().positive().max(10000).optional()
+        file_paths: z.array(z.string().min(1)).min(1).max(50),
+        line_offset: z.number().int().default(0),
+        line_count: z.number().int().positive().max(10000).optional()
       }),
-      annotations: { title: 'Read multiple files', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'Daniel read many texts', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ paths, offset, length }) => {
-      const results = await Promise.all(paths.map(async path => {
+    safe(async ({ file_paths, line_offset, line_count }) => {
+      const results = await Promise.all(file_paths.map(async filePath => {
         try {
-          return { path, content: await readFile(path, offset, length) };
+          return { file_path: filePath, content: await readFile(filePath, line_offset, line_count) };
         } catch (error) {
-          return { path, error: error instanceof Error ? error.message : String(error) };
+          return { file_path: filePath, error: error instanceof Error ? error.message : String(error) };
         }
       }));
       return jsonResult(results);
@@ -110,227 +110,227 @@ export function createDanielCommanderServer(): McpServer {
   );
 
   server.registerTool(
-    'list_directory',
+    'dc_list_entries',
     {
       description: 'List files and directories inside an allowed directory.',
-      inputSchema: z.object({ path: z.string().min(1) }),
-      annotations: { title: 'List directory', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      inputSchema: z.object({ directory_path: z.string().min(1) }),
+      annotations: { title: 'Daniel list entries', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ path }) => jsonResult(await listDirectory(path)))
+    safe(async ({ directory_path }) => jsonResult(await listDirectory(directory_path)))
   );
 
   server.registerTool(
-    'get_file_info',
+    'dc_stat_path',
     {
       description: 'Return size, type, canonical path, and modification time for a file or directory.',
-      inputSchema: z.object({ path: z.string().min(1) }),
-      annotations: { title: 'Get file info', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      inputSchema: z.object({ target_path: z.string().min(1) }),
+      annotations: { title: 'Daniel stat path', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ path }) => jsonResult(await getFileInfo(path)))
+    safe(async ({ target_path }) => jsonResult(await getFileInfo(target_path)))
   );
 
   server.registerTool(
-    'write_file',
+    'dc_write_text',
     {
       description: 'Write or append UTF-8 text inside configured allowed directories. Rewrite mode replaces existing content.',
       inputSchema: z.object({
-        path: z.string().min(1),
-        content: z.string(),
-        mode: z.enum(['rewrite', 'append']).default('rewrite')
+        file_path: z.string().min(1),
+        text: z.string(),
+        write_mode: z.enum(['rewrite', 'append']).default('rewrite')
       }),
-      annotations: { title: 'Write file', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
+      annotations: { title: 'Daniel write text', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
     },
-    safe(async ({ path, content, mode }) => {
-      await writeFile(path, content, mode);
+    safe(async ({ file_path, text, write_mode }) => {
+      await writeFile(file_path, text, write_mode);
       const cfg = await configManager.getConfig();
-      const lineCount = content.split('\n').length;
+      const lineCount = text.split('\n').length;
       const warning = lineCount > cfg.fileWriteLineLimit
         ? ` WARNING: write contained ${lineCount} lines; configured advisory threshold is ${cfg.fileWriteLineLimit}. Prefer smaller chunks for more reliable tool calls.`
         : '';
-      return textResult(`WROTE ${path} (${Buffer.byteLength(content)} bytes, ${lineCount} lines, mode=${mode}).${warning}`);
+      return textResult(`WROTE ${file_path} (${Buffer.byteLength(text)} bytes, ${lineCount} lines, mode=${write_mode}).${warning}`);
     })
   );
 
   server.registerTool(
-    'create_directory',
+    'dc_make_directory',
     {
       description: 'Create a directory, including missing parent directories, inside configured allowed directories.',
-      inputSchema: z.object({ path: z.string().min(1) }),
-      annotations: { title: 'Create directory', readOnlyHint: false, destructiveHint: false, openWorldHint: false }
+      inputSchema: z.object({ directory_path: z.string().min(1) }),
+      annotations: { title: 'Daniel make directory', readOnlyHint: false, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ path }) => {
-      await createDirectory(path);
-      return textResult(`CREATED ${path}`);
+    safe(async ({ directory_path }) => {
+      await createDirectory(directory_path);
+      return textResult(`CREATED ${directory_path}`);
     })
   );
 
   server.registerTool(
-    'move_file',
+    'dc_move_path',
     {
       description: 'Move or rename a file or directory within configured allowed directories.',
       inputSchema: z.object({
-        source: z.string().min(1),
-        destination: z.string().min(1)
+        from_path: z.string().min(1),
+        to_path: z.string().min(1)
       }),
-      annotations: { title: 'Move file', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
+      annotations: { title: 'Daniel move path', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
     },
-    safe(async ({ source, destination }) => {
-      await moveFile(source, destination);
-      return textResult(`MOVED ${source} -> ${destination}`);
+    safe(async ({ from_path, to_path }) => {
+      await moveFile(from_path, to_path);
+      return textResult(`MOVED ${from_path} -> ${to_path}`);
     })
   );
 
   server.registerTool(
-    'edit_block',
+    'dc_patch_text_block',
     {
       description: 'Replace a text block in a UTF-8 file. Uses exact replacement first and a bounded fuzzy fallback when one replacement is expected.',
       inputSchema: z.object({
-        path: z.string().min(1),
-        old_string: z.string(),
-        new_string: z.string(),
-        expected_replacements: z.number().int().positive().max(100).default(1)
+        file_path: z.string().min(1),
+        find_text: z.string(),
+        replace_text: z.string(),
+        expected_matches: z.number().int().positive().max(100).default(1)
       }),
-      annotations: { title: 'Edit block', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
+      annotations: { title: 'Daniel patch text block', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
     },
-    safe(async ({ path, old_string, new_string, expected_replacements }) =>
-      jsonResult(await editBlock(path, old_string, new_string, expected_replacements))
+    safe(async ({ file_path, find_text, replace_text, expected_matches }) =>
+      jsonResult(await editBlock(file_path, find_text, replace_text, expected_matches))
     )
   );
 
   server.registerTool(
-    'start_search',
+    'dc_search_start',
     {
       description: 'Start an asynchronous ripgrep-backed filename or content search inside allowed directories.',
       inputSchema: z.object({
-        root_path: z.string().min(1),
-        pattern: z.string(),
-        search_type: z.enum(['files', 'content']),
-        file_pattern: z.string().optional(),
-        ignore_case: z.boolean().default(true),
-        max_results: z.number().int().positive().max(100000).optional(),
-        include_hidden: z.boolean().default(false),
-        context_lines: z.number().int().min(0).max(20).default(0),
-        timeout_ms: z.number().int().positive().max(300000).optional(),
-        literal_search: z.boolean().default(false)
+        search_root: z.string().min(1),
+        query_text: z.string(),
+        query_kind: z.enum(['files', 'content']),
+        file_glob: z.string().optional(),
+        case_insensitive: z.boolean().default(true),
+        result_limit: z.number().int().positive().max(100000).optional(),
+        include_dotfiles: z.boolean().default(false),
+        context_line_count: z.number().int().min(0).max(20).default(0),
+        deadline_ms: z.number().int().positive().max(300000).optional(),
+        fixed_string: z.boolean().default(false)
       }),
-      annotations: { title: 'Start search', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'Daniel search start', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
     safe(async args => jsonResult(await searchManager.startSearch({
-      rootPath: args.root_path,
-      pattern: args.pattern,
-      searchType: args.search_type,
-      filePattern: args.file_pattern,
-      ignoreCase: args.ignore_case,
-      maxResults: args.max_results,
-      includeHidden: args.include_hidden,
-      contextLines: args.context_lines,
-      timeout: args.timeout_ms,
-      literalSearch: args.literal_search
+      rootPath: args.search_root,
+      pattern: args.query_text,
+      searchType: args.query_kind,
+      filePattern: args.file_glob,
+      ignoreCase: args.case_insensitive,
+      maxResults: args.result_limit,
+      includeHidden: args.include_dotfiles,
+      contextLines: args.context_line_count,
+      timeout: args.deadline_ms,
+      literalSearch: args.fixed_string
     })))
   );
 
   server.registerTool(
-    'get_more_search_results',
+    'dc_search_read',
     {
       description: 'Read a page of results from an existing search session.',
       inputSchema: z.object({
-        session_id: z.string().min(1),
-        offset: z.number().int().default(0),
-        length: z.number().int().positive().max(10000).default(100)
+        search_id: z.string().min(1),
+        result_offset: z.number().int().default(0),
+        result_count: z.number().int().positive().max(10000).default(100)
       }),
-      annotations: { title: 'Get search results', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'Daniel search read', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ session_id, offset, length }) =>
-      jsonResult(searchManager.readSearchResults(session_id, offset, length))
+    safe(async ({ search_id, result_offset, result_count }) =>
+      jsonResult(searchManager.readSearchResults(search_id, result_offset, result_count))
     )
   );
 
   server.registerTool(
-    'stop_search',
+    'dc_search_cancel',
     {
-      description: 'Stop an active search session.',
-      inputSchema: z.object({ session_id: z.string().min(1) }),
-      annotations: { title: 'Stop search', readOnlyHint: false, destructiveHint: false, openWorldHint: false }
+      description: 'Cancel an active search session.',
+      inputSchema: z.object({ search_id: z.string().min(1) }),
+      annotations: { title: 'Daniel search cancel', readOnlyHint: false, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ session_id }) => jsonResult({ stopped: searchManager.stopSearch(session_id) }))
+    safe(async ({ search_id }) => jsonResult({ stopped: searchManager.stopSearch(search_id) }))
   );
 
   server.registerTool(
-    'list_searches',
+    'dc_search_sessions',
     {
       description: 'List search sessions and their status.',
       inputSchema: z.object({}),
-      annotations: { title: 'List searches', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'Daniel search sessions', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
     safe(async () => jsonResult(searchManager.listSearches()))
   );
 
   server.registerTool(
-    'start_process',
+    'dc_run_shell',
     {
       description: 'Start a shell command in a persistent local terminal session. The session can later receive stdin and expose paginated output. Commands are checked against the configured blocklist.',
       inputSchema: z.object({
-        command: z.string().min(1),
-        timeout_ms: z.number().int().positive().max(300000).default(3000),
-        shell: z.string().min(1).optional()
+        command_line: z.string().min(1),
+        wait_ms: z.number().int().positive().max(300000).default(3000),
+        shell_path: z.string().min(1).optional()
       }),
-      annotations: { title: 'Start process', readOnlyHint: false, destructiveHint: true, openWorldHint: true }
+      annotations: { title: 'Daniel run shell', readOnlyHint: false, destructiveHint: true, openWorldHint: true }
     },
-    safe(async ({ command, timeout_ms, shell }) =>
-      jsonResult(await startProcess(command, timeout_ms, shell))
+    safe(async ({ command_line, wait_ms, shell_path }) =>
+      jsonResult(await startProcess(command_line, wait_ms, shell_path))
     )
   );
 
   server.registerTool(
-    'read_process_output',
+    'dc_shell_output',
     {
       description: 'Read paginated stdout/stderr captured for an active or recently completed terminal session.',
       inputSchema: z.object({
-        pid: z.number().int().positive(),
-        offset: z.number().int().default(0),
-        length: z.number().int().positive().max(10000).default(1000)
+        process_id: z.number().int().positive(),
+        line_offset: z.number().int().default(0),
+        line_count: z.number().int().positive().max(10000).default(1000)
       }),
-      annotations: { title: 'Read process output', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'Daniel shell output', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ pid, offset, length }) => jsonResult(readProcessOutput(pid, offset, length)))
+    safe(async ({ process_id, line_offset, line_count }) => jsonResult(readProcessOutput(process_id, line_offset, line_count)))
   );
 
   server.registerTool(
-    'interact_with_process',
+    'dc_shell_input',
     {
       description: 'Send a line of stdin to an active persistent terminal session.',
       inputSchema: z.object({
-        pid: z.number().int().positive(),
-        input: z.string()
+        process_id: z.number().int().positive(),
+        stdin_text: z.string()
       }),
-      annotations: { title: 'Interact with process', readOnlyHint: false, destructiveHint: true, openWorldHint: true }
+      annotations: { title: 'Daniel shell input', readOnlyHint: false, destructiveHint: true, openWorldHint: true }
     },
-    safe(async ({ pid, input }) => {
-      if (!(await interactWithProcess(pid, input))) throw new Error(`Process ${pid} not found or stdin unavailable`);
-      return textResult(`INPUT_SENT pid=${pid}`);
+    safe(async ({ process_id, stdin_text }) => {
+      if (!(await interactWithProcess(process_id, stdin_text))) throw new Error(`Process ${process_id} not found or stdin unavailable`);
+      return textResult(`INPUT_SENT pid=${process_id}`);
     })
   );
 
   server.registerTool(
-    'list_sessions',
+    'dc_shell_sessions',
     {
       description: 'List active and recently completed persistent terminal sessions.',
       inputSchema: z.object({}),
-      annotations: { title: 'List terminal sessions', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'Daniel shell sessions', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
     safe(async () => jsonResult(listSessions()))
   );
 
   server.registerTool(
-    'force_terminate',
+    'dc_shell_kill',
     {
       description: 'Terminate an active terminal session by PID, escalating from SIGINT to SIGKILL if necessary.',
-      inputSchema: z.object({ pid: z.number().int().positive() }),
-      annotations: { title: 'Force terminate', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
+      inputSchema: z.object({ process_id: z.number().int().positive() }),
+      annotations: { title: 'Daniel shell kill', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
     },
-    safe(async ({ pid }) => {
-      if (!forceTerminate(pid)) throw new Error(`Process ${pid} not found`);
-      return textResult(`TERMINATION_REQUESTED pid=${pid}`);
+    safe(async ({ process_id }) => {
+      if (!forceTerminate(process_id)) throw new Error(`Process ${process_id} not found`);
+      return textResult(`TERMINATION_REQUESTED pid=${process_id}`);
     })
   );
 

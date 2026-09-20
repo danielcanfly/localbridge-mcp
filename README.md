@@ -1,21 +1,21 @@
 # Daniel Commander
 
-Daniel Commander is a self-hosted MCP computer-control server for local files, search, surgical editing, persistent terminal sessions, Git workflows, and SSH.
+Daniel Commander is a self-hosted MCP computer-control server for local files, text editing, search, persistent shell sessions, Git workflows, and SSH-driven operations.
 
-It does **not** provide a hosted relay. Each user runs their own MCP server and owns their own machine, credentials, tunnel, and remote hosts.
+It does **not** provide a hosted relay. Each user runs their own MCP server and owns their machine, credentials, tunnel, filesystem allowlist, and remote hosts.
 
-Current source version: **v0.1.0-rc.1**. The portable stdio core is qualified on macOS and Linux. The persistent login runtime is qualified on macOS. npm publication remains disabled; releases are source-only.
+Current source version: **v0.2.0**. The portable stdio core is qualified on macOS and Linux. The persistent login runtime is qualified on macOS. npm publication remains disabled; releases are source-only.
 
 ## What it exposes
 
-Daniel Commander provides 17 MCP tools covering:
+Daniel Commander provides 17 MCP tools with a Daniel-specific `dc_*` surface:
 
-- text filesystem read/write/list/create/move/info
-- exact and fuzzy block editing
-- asynchronous ripgrep filename/content search
-- persistent terminal process start/output/stdin/session/termination
+- `dc_read_text`, `dc_read_many_texts`, `dc_list_entries`, `dc_stat_path`
+- `dc_write_text`, `dc_make_directory`, `dc_move_path`, `dc_patch_text_block`
+- `dc_search_start`, `dc_search_read`, `dc_search_cancel`, `dc_search_sessions`
+- `dc_run_shell`, `dc_shell_output`, `dc_shell_input`, `dc_shell_sessions`, `dc_shell_kill`
 
-Git, Docker, SSH, systemd, test runners, and similar workflows use the general terminal surface instead of product-specific wrappers.
+Git, Docker, SSH, systemd, test runners, and similar workflows use the general shell surface instead of product-specific wrappers.
 
 ## Support matrix
 
@@ -23,7 +23,7 @@ Git, Docker, SSH, systemd, test runners, and similar workflows use the general t
 | --- | --- | --- | --- |
 | stdio MCP core | Qualified | Qualified in CI | Not yet qualified |
 | filesystem/search/edit | Qualified | Qualified in CI | Not yet qualified |
-| persistent terminal | Qualified | Qualified in CI | Not yet qualified |
+| persistent shell sessions | Qualified | Qualified in CI | Not yet qualified |
 | launch-at-login runtime | Qualified with launchd | Not implemented | Not implemented |
 | macOS protected-folder handling | Qualified with Runtime.app/TCC | N/A | N/A |
 | OpenAI Secure MCP Tunnel path | Qualified on macOS | Core-compatible, not production-qualified here | Not qualified |
@@ -53,7 +53,7 @@ You can inspect the installation without printing secrets:
 The macOS production path is:
 
     ChatGPT
-      -> your private MCP app
+      -> your MCP app
       -> your OpenAI Secure MCP Tunnel
       -> launchd
       -> Daniel Commander Runtime.app
@@ -67,10 +67,12 @@ Requirements in addition to the core:
 - Xcode Command Line Tools
 - `tunnel-client` already installed
 - your own Secure MCP Tunnel ID
-- your own control-plane credential stored in a private file
+- your own control-plane credential stored outside the repository
 
 Example:
 
+    mkdir -p "$HOME/.config/daniel-commander"
+    chmod 700 "$HOME/.config/daniel-commander"
     chmod 600 "$HOME/.config/daniel-commander/tunnel-runtime-key"
 
     ./scripts/setup-macos.sh \
@@ -93,7 +95,7 @@ See [docs/INSTALL_MACOS.md](docs/INSTALL_MACOS.md) for the full installation and
 
 Normal updates replace the deployed JavaScript bundle without rebuilding the Runtime.app, preserving its macOS privacy authorization. The update path reloads the LaunchAgent when its runtime environment changes.
 
-Current `main` implements active-only macOS sleep prevention: while the production tunnel is alive, Daniel Commander holds `caffeinate -i -w <tunnel-pid>` and releases it when the service stops or the tunnel exits. This prevents idle system sleep while remote control is active without requesting display wake or overriding lid-close sleep. The tagged `v0.1.0-rc.1` source predates this original-P8 repair.
+Daniel Commander holds active-only macOS sleep prevention while the production tunnel is alive: `caffeinate -i -w <tunnel-pid>`. It releases that assertion when the service stops or the tunnel exits. It does not request display wake or override lid-close sleep.
 
 ## Configuration
 
@@ -107,47 +109,30 @@ See [config.example.json](config.example.json).
 
 User-specific paths, tunnel identifiers, credentials, SSH aliases/keys, and runtime secrets belong in external configuration, never in the repository.
 
-`fileWriteLineLimit` is an advisory chunking threshold for `write_file`. It produces a warning for large writes; it is not a security boundary or hard size cap.
+`fileWriteLineLimit` is an advisory chunking threshold for `dc_write_text`. It produces a warning for large writes; it is not a security boundary or hard size cap.
 
 ## Security model
 
 Daniel Commander is intentionally powerful.
 
-Filesystem allowlists and command blocklists are guardrails, not a security sandbox. Terminal commands execute with the permissions of the operating-system user. Shells, interpreters, scripts, and remote SSH commands can reach resources outside the filesystem-tool allowlist if the OS user can reach them.
+Filesystem allowlists and command blocklists are guardrails, not a security sandbox. Shell commands execute with the permissions of the operating-system user. Shells, interpreters, scripts, and remote SSH commands can reach resources outside the filesystem-tool allowlist if the OS user can reach them.
 
 For stronger isolation, use a dedicated OS account, container, or VM. Never expose an unauthenticated shell-capable MCP endpoint to the public Internet.
 
 Read [SECURITY.md](SECURITY.md) before enabling remote access.
 
-## Upstream provenance
+## Qualification and release evidence
 
-Daniel Commander selectively derives portions of Desktop Commander MCP. The selected baseline is Desktop Commander MCP v0.2.51 commit `092ce0b841e86455f12e41f4dc36399a7522ecb5`.
+Product qualification evidence lives under [docs/qualification](docs/qualification). It is retained for auditability but kept out of the main product path.
 
-See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for attribution and the upstream MIT license.
+## License and notices
+
+Daniel Commander is MIT licensed. Third-party license and provenance notices are preserved in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Development
 
     npm ci
     npm test
-
-The repository CI runs the portable core on macOS and Linux. macOS additionally type-checks the Runtime.app supervisor.
+    npm run release:preflight
 
 The npm package is marked `private` intentionally. This repository is source distribution, not an npm registry release.
-
-## Qualification history
-
-- P0: repository/bootstrap/provenance
-- P1: Secure MCP Tunnel entitlement gate
-- P2: headless execution core
-- P3: 17-tool MCP surface
-- P4: real Mac, Git, tests, and existing SSH operator workflow
-- P5: TCC-aware macOS production runtime, auto-start, crash recovery, health, logs, and update flow
-- P6: public-ready setup, portability, clean-room install, documentation, CI, and release privacy gates
-
-Detailed qualification evidence is under `docs/`.
-
-## Releases
-
-See [CHANGELOG.md](CHANGELOG.md) for release notes and [docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md) for the release workflow.
-
-The current release candidate is `v0.1.0-rc.1`. GitHub source releases are supported; npm publishing and prebuilt/notarized Runtime.app binaries are not currently offered.

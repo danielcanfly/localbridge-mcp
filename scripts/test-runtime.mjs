@@ -12,7 +12,7 @@ run('npm', ['run', 'build']);
 if (process.platform === 'darwin') {
   run('/usr/bin/swiftc', ['-typecheck', 'runtime-app/DanielCommanderRuntime.swift']);
 } else {
-  console.log('P5_SWIFT_TYPECHECK_SKIPPED_NON_DARWIN');
+  console.log('RUNTIME_SWIFT_TYPECHECK_SKIPPED_NON_DARWIN');
 }
 
-run(process.execPath, ['dist/test/p5-runtime.integration.js']);
+run(process.execPath, ['dist/test/runtime.integration.js']);

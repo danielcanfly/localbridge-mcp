@@ -6,7 +6,7 @@ REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 cd "$REPO_ROOT"
 
 fail() {
-  echo "P7_PREFLIGHT_FAIL: $*" >&2
+  echo "RELEASE_PREFLIGHT_FAIL: $*" >&2
   exit 2
 }
 
@@ -16,8 +16,8 @@ fail() {
 VERSION=$(node -p "require('./package.json').version")
 PRIVATE=$(node -p "String(require('./package.json').private)")
 case "$VERSION" in
-  0.1.0-rc.2) ;;
-  *) fail "unexpected release-candidate version: $VERSION" ;;
+  0.2.0) ;;
+  *) fail "unexpected release version: $VERSION" ;;
 esac
 [ "$PRIVATE" = "true" ] || fail "npm package must remain private"
 
@@ -29,7 +29,7 @@ npm test
 npm audit
 git diff --check
 
-for required in LICENSE THIRD_PARTY_NOTICES.md SECURITY.md CONTRIBUTING.md CHANGELOG.md docs/RELEASE_PROCESS.md docs/P7_STATUS.md docs/ORIGINAL_PLAN_RECONCILIATION.md; do
+for required in LICENSE THIRD_PARTY_NOTICES.md SECURITY.md CONTRIBUTING.md CHANGELOG.md docs/RELEASE_PROCESS.md docs/qualification/RELEASE_STATUS.md docs/qualification/CONSTRUCTION_MATRIX.md; do
   [ -s "$required" ] || fail "missing required release file: $required"
 done
 
@@ -107,7 +107,7 @@ function walk(name){
   for(const child of Object.keys(dep.dependencies||{})) walk(child);
 }
 for(const name of Object.keys(pkg.dependencies||{})) walk(name);
-console.log('P7_DEPENDENCY_LICENSE_PASS');
+console.log('RELEASE_DEPENDENCY_LICENSE_PASS');
 NODE
 
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/daniel-commander-release.XXXXXX")
@@ -127,6 +127,6 @@ ARCHIVE="$TMP/daniel-commander-v$VERSION-source.tar.gz"
 git archive --format=tar.gz --prefix="daniel-commander-v$VERSION/" -o "$ARCHIVE" HEAD
 SHA256=$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')
 
-echo "P7_SOURCE_ARCHIVE_SHA256=$SHA256"
-echo "P7_RELEASE_VERSION=$VERSION"
-echo "P7_PREFLIGHT_PASS"
+echo "RELEASE_SOURCE_ARCHIVE_SHA256=$SHA256"
+echo "RELEASE_VERSION=$VERSION"
+echo "RELEASE_PREFLIGHT_PASS"

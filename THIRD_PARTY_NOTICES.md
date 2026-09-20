@@ -1,20 +1,20 @@
 # Third-party notices
 
-Daniel Commander selectively derives portions of Desktop Commander MCP.
+Daniel Commander includes or adapts selected MIT-licensed execution-core routines from the project listed below. Required notices are retained here and in relevant source headers.
 
 ## Desktop Commander MCP
 
 - Project: Desktop Commander MCP
 - Upstream: https://github.com/wonderwhy-er/DesktopCommanderMCP
-- Pinned source baseline: v0.2.51
-- Commit: 092ce0b841e86455f12e41f4dc36399a7522ecb5
-- Imported/derived in P2: terminal session management, command parsing/blocklist logic, process-state detection, fuzzy-search core, ripgrep resolution, and the headless search-session design
+- Pinned baseline: `092ce0b841e86455f12e41f4dc36399a7522ecb5`
 - License: MIT
+- Used for selected local execution-core routines, including terminal session behavior, command policy helpers, process-state detection, fuzzy text matching, ripgrep resolution, and search-session mechanics.
 
-The copied/derived source files include pinned-upstream provenance headers. Daniel Commander removes upstream telemetry, UI/document integrations, hosted-remote dependencies, and product-specific behavior from the P2 headless core.
+Daniel Commander removes upstream product UI, hosted remote-device behavior, telemetry upload paths, analytics/feedback upload paths, office-document integrations, and unrelated marketing/product assets. Daniel Commander adds its own MCP surface, fail-closed configuration, macOS Runtime.app, launchd service management, Secure MCP Tunnel deployment path, active-only sleep-prevention lifecycle, release preflight, and qualification matrix.
 
-### Upstream license
+## Upstream MIT license notice
 
+```text
 MIT License
 
 Copyright (c) 2024-2025 Eduard Ruzga and Desktop Commander Contributors
@@ -36,3 +36,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```

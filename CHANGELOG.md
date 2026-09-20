@@ -2,6 +2,26 @@
 
 All notable Daniel Commander source releases are documented here.
 
+## [0.2.0] - 2026-09-20
+
+Product-polished source release after final qualification closure.
+
+### Changed
+
+- Replaced the generic MCP tool surface with Daniel-specific `dc_*` tool names.
+- Renamed tool arguments to product-owned names, including `file_path`, `line_count`, `search_root`, `query_text`, `process_id`, and `stdin_text`.
+- Renamed test scripts from phase-number labels to product-level names.
+- Moved construction and qualification evidence into `docs/qualification/`.
+- Updated README, release process, and release notes for the v0.2.0 product surface.
+
+### Preserved
+
+- Source-only distribution with npm publication disabled.
+- macOS Runtime.app / launchd / TCC production runtime.
+- Active-only macOS sleep prevention while the production tunnel is alive.
+- Full release preflight, CI, CodeQL, privacy, history, and license gates.
+- Required third-party notices and provenance.
+
 ## [0.1.0-rc.2] - 2026-09-20
 
 Second public-release candidate.
@@ -10,16 +30,16 @@ Second public-release candidate.
 
 - Active-only macOS sleep prevention for the production tunnel lifecycle using `caffeinate -i -w <tunnel-pid>`.
 - Runtime status reporting for the validated production caffeinate relationship.
-- Original P8 lifecycle regression coverage and qualification documentation.
+- Lifecycle qualification lifecycle regression coverage and qualification documentation.
 
 ### Fixed
 
 - Reloaded the macOS LaunchAgent after update-time environment changes so the runtime observes the deployed tunnel wrapper.
-- Updated release-candidate notes to reflect that original P8 is closed and original P9 remains open.
+- Updated release-candidate notes to reflect that lifecycle qualification is closed and final qualification remains open.
 
 ### Known boundaries
 
-- Original P9 row-by-row qualification remains open before any final `DANIEL_COMMANDER_V0_1_PASS` declaration.
+- Final qualification row-by-row qualification remains open before any final `DANIEL_COMMANDER_V0_1_PASS` declaration.
 
 ## [0.1.0-rc.1] - 2026-09-20
 

@@ -1,4 +1,4 @@
-# Original P8 lifecycle qualification
+# Lifecycle qualification lifecycle qualification
 
 Status: **PASS**
 
@@ -48,4 +48,4 @@ Final candidate: `47495e95ca761b17096c42685909c361409eb233`.
 
 ## Boundary
 
-Original P8 is closed. Original P9 remains separate and must be qualified row-by-row before `DANIEL_COMMANDER_V0_1_PASS` can be declared.
+Lifecycle qualification is closed. Final qualification remains separate and must be qualified row-by-row before `DANIEL_COMMANDER_V0_1_PASS` can be declared.

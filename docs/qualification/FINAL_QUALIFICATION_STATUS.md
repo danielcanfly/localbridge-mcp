@@ -1,8 +1,8 @@
-# Original P9 final qualification
+# Final qualification final qualification
 
 Status: **PASS**
 
-Authority: original frozen Daniel Commander v0.1 P9 full-qualification requirement after public RC visibility and original P8 closure.
+Authority: original frozen Daniel Commander v0.1 P9 full-qualification requirement after public RC visibility and lifecycle qualification closure.
 
 ## Candidate under qualification
 
@@ -21,7 +21,7 @@ P9 adds explicit final-matrix coverage and documentation. It does not alter runt
 | Terminal stderr and completed-session readability | PASS | The P9 test runs a completed process that writes to both stdout and stderr, then verifies completed-session `readProcessOutput` preserves both streams, exit code, completion state, and later readability. Emits `ORIGINAL_P9_TERMINAL_STDERR_COMPLETED_READABILITY_PASS`. |
 | Multiple simultaneous sessions | PASS | The P9 test starts two concurrent long-lived sessions, verifies distinct PIDs, active-session listing, separate readable output, and clean force-termination. Emits `ORIGINAL_P9_MULTIPLE_SIMULTANEOUS_SESSIONS_PASS`. |
 | Explicit remote/reconnect evidence under final production build | PASS | The production launchd service was restarted after `v0.1.0-rc.2` deployment. It recovered with new app/tunnel/caffeinate PIDs, `HEALTH=ok`, `READY=ok`, `TCC_PREFLIGHT=ok`, and `RUNTIME_COMMIT=e87a0da76c51`. Old pre-restart PIDs were verified gone. |
-| Incorporate original P8 sleep-prevention and lifecycle-shutdown evidence | PASS | Original P8 is closed by `docs/ORIGINAL_P8_STATUS.md` and automated `test:original-p8`. During P9 live verification, runtime status still reported `CAFFEINATE_COUNT=1`; `pmset -g assertions` showed Daniel Commander `caffeinate -i -w` asserting on behalf of the active tunnel PID. |
+| Incorporate lifecycle qualification sleep-prevention and lifecycle-shutdown evidence | PASS | Lifecycle qualification is closed by `docs/qualification/LIFECYCLE_STATUS.md` and automated `test:original-p8`. During P9 live verification, runtime status still reported `CAFFEINATE_COUNT=1`; `pmset -g assertions` showed Daniel Commander `caffeinate -i -w` asserting on behalf of the active tunnel PID. |
 
 ## Live evidence snapshot
 
@@ -68,6 +68,6 @@ Doctor after reconnect emitted `DOCTOR_CORE_PASS` with the same runtime commit a
 
 ## Boundary
 
-This closes the original construction P0-P9 matrix for Daniel Commander v0.1 source qualification.
+This closes the original construction construction matrix matrix for Daniel Commander v0.1 source qualification.
 
 A final `v0.1.0` release tag remains a separate release-management decision. The existing `v0.1.0-rc.2` draft prerelease remains the P8-closed release candidate created before this P9 qualification commit.

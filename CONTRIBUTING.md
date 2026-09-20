@@ -1,4 +1,4 @@
-# Contributing
+# Contributing to Daniel Commander
 
 Thanks for helping improve Daniel Commander.
 
@@ -7,38 +7,36 @@ Thanks for helping improve Daniel Commander.
     npm ci
     npm test
 
-The portable core is expected to stay green on both macOS and Linux.
+Run the release gate before proposing release-facing changes:
 
-## Pull request expectations
-
-Keep changes narrow and explain:
-
-- what user problem the change solves;
-- which operating systems it affects;
-- what security boundary changes, if any;
-- how the change was tested.
-
-For macOS Runtime.app or launchd changes, include a macOS qualification result rather than relying only on source inspection.
-
-## Security and privacy
-
-Do not commit real:
-
-- API keys or bearer tokens
-- tunnel IDs from a private deployment
-- SSH private keys
-- device identifiers
-- personal absolute paths
-- production host credentials
-
-Use placeholders and temporary fixtures.
-
-Do not weaken fail-closed filesystem defaults merely to make a demo easier.
-
-## Upstream-derived code
-
-Some execution-core code is derived from Desktop Commander MCP under the MIT license. Preserve provenance headers and keep THIRD_PARTY_NOTICES.md accurate when modifying or importing upstream-derived code.
+    npm run release:preflight
 
 ## Scope
 
-Daniel Commander intentionally keeps the public MCP surface small. Prefer general filesystem/search/edit/terminal primitives over product-specific wrappers unless there is a clear security or correctness reason for a dedicated tool.
+Daniel Commander is a self-hosted MCP computer-control server. Contributions should preserve:
+
+- fail-closed filesystem access;
+- explicit user-owned credentials and tunnel configuration;
+- source-only distribution;
+- no hosted relay assumptions;
+- clear macOS/Linux/Windows support boundaries.
+
+## Safety rules
+
+Do not commit:
+
+- API keys, tunnel credentials, or OAuth tokens;
+- SSH private keys;
+- private hostnames, device IDs, or personal filesystem paths;
+- screenshots or logs containing secrets;
+- machine-specific runtime artifacts.
+
+Use placeholders and temporary fixtures.
+
+## Third-party provenance
+
+Some low-level execution routines include third-party provenance obligations. Preserve source headers and keep `THIRD_PARTY_NOTICES.md` accurate when modifying those areas.
+
+## Runtime changes
+
+For macOS Runtime.app, launchd, tunnel supervision, sleep-prevention, or TCC-related changes, include a live macOS qualification result rather than relying only on source inspection.

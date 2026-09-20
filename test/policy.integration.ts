@@ -25,7 +25,7 @@ await assert.rejects(
   () => core.readFile(path.join(workspace, 'not-allowed.txt')),
   /No allowed directories configured/
 );
-console.log('P4_FAIL_CLOSED_DEFAULT_PASS');
+console.log('POLICY_FAIL_CLOSED_DEFAULT_PASS');
 
 await configManager.updateConfig({
   allowedDirectories: [workspace],
@@ -34,13 +34,13 @@ await configManager.updateConfig({
 });
 
 const allowed = path.join(workspace, 'allowed.txt');
-await core.writeFile(allowed, 'P4_ALLOWED_OK\n');
-assert.match(await core.readFile(allowed), /P4_ALLOWED_OK/);
+await core.writeFile(allowed, 'POLICY_ALLOWED_OK\n');
+assert.match(await core.readFile(allowed), /POLICY_ALLOWED_OK/);
 
 if (process.platform !== 'win32') {
   await assert.rejects(() => core.readFile('/etc/hosts'), /outside allowed directories/i);
 }
-console.log('P4_EXPLICIT_ALLOWLIST_PASS');
+console.log('POLICY_EXPLICIT_ALLOWLIST_PASS');
 
 const interactive = await core.startProcess(
   `node -e "process.stdin.setEncoding('utf8'); console.log('READY>'); process.stdin.on('data',d=>console.log('ECHO:'+d.trim()))"`,
@@ -61,7 +61,7 @@ for (let i = 0; i < 40 && !out.lines.join('\n').includes('ECHO:hello-p4'); i++) 
 }
 assert.match(out.lines.join('\n'), /ECHO:hello-p4/);
 assert.equal(core.forceTerminate(interactive.pid), true);
-console.log('P4_STDIN_POLICY_PASS');
+console.log('POLICY_STDIN_POLICY_PASS');
 
 
 const sourceRoot = path.resolve('src');
@@ -78,7 +78,7 @@ for (const file of sourceFiles) {
   const content = await fs.readFile(file, 'utf8');
   assert.equal(/console\.(log|info)\s*\(/.test(content), false, 'stdout logging is forbidden in stdio MCP runtime: ' + file);
 }
-console.log('P4_STDIO_STDOUT_CLEAN_PASS');
+console.log('POLICY_STDIO_STDOUT_CLEAN_PASS');
 
 await fs.rm(sandbox, { recursive: true, force: true });
-console.log('P4_POLICY_BASELINE_PASS');
+console.log('POLICY_POLICY_BASELINE_PASS');

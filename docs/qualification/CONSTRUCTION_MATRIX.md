@@ -1,6 +1,6 @@
 # Original construction-plan reconciliation
 
-Authority: the original frozen Daniel Commander v0.1 construction plan defined P0 through P9 by task content. Later implementation sessions reused phase numbers for different milestones. From this document forward, task content is authoritative and phase-number drift must not be used to infer completion.
+Authority: the original frozen Daniel Commander v0.1 construction plan defined the construction matrix by task content. Later implementation sessions reused phase numbers for different milestones. From this document forward, task content is authoritative and phase-number drift must not be used to infer completion.
 
 ## Original P0: clean independent repository
 
@@ -18,7 +18,7 @@ The isolated two-tool Gate proved ChatGPT discovery, local read, local write, wr
 
 The original Gate checklist also mentioned reconnect. Reconnect was not separately closed inside P1 itself. It was subsequently qualified more strongly by production unload/bootstrap and tunnel/supervisor crash recovery in the lifecycle implementation.
 
-The one-off `gate/` implementation is no longer product source. P1 evidence remains in docs/P1_GATE_STATUS.md.
+The one-off `gate/` implementation is no longer product source. P1 evidence remains in docs/qualification/TRANSPORT_GATE_STATUS.md.
 
 ## Original P2: selective execution-core extraction
 
@@ -83,12 +83,12 @@ Later sessions reused phase labels:
 
 - actual P3 combined original P4 + original P6 and live Plan-A transport qualification;
 - actual P4 completed much of original P5 plus real Git/SSH operator qualification;
-- actual P5 implemented most of original P8 lifecycle;
-- actual P6 and P7 became portability/public-release phases that were not part of the original P0-P9 numbering.
+- actual P5 implemented most of lifecycle qualification lifecycle;
+- actual P6 and P7 became portability/public-release phases that were not part of the original construction matrix numbering.
 
 This renumbering did not remove the original P0-P7 requirements, but it obscured authority. Future work must use the original task-content definitions when deciding whether v0.1 is complete.
 
-## Original P8: lifecycle status before resuming work
+## Lifecycle qualification: lifecycle status before resuming work
 
 Status: PASS.
 
@@ -106,13 +106,13 @@ Implemented and qualified:
 - no Daniel Commander caffeinate process while the service is stopped;
 - launchd plist reload during updates so runtime environment changes take effect.
 
-Live qualification covered production update, tunnel crash, Runtime.app crash, stop/start, no-sleep assertion ownership, stale-process cleanup, and Runtime.app identity preservation. See `docs/ORIGINAL_P8_STATUS.md`.
+Live qualification covered production update, tunnel crash, Runtime.app crash, stop/start, no-sleep assertion ownership, stale-process cleanup, and Runtime.app identity preservation. See `docs/qualification/LIFECYCLE_STATUS.md`.
 
-## Original P9: full qualification status
+## Final qualification: full qualification status
 
 Status: PASS.
 
-The original P9 authority has now been reconciled row-by-row in `docs/ORIGINAL_P9_STATUS.md`.
+The final qualification authority has now been reconciled row-by-row in `docs/qualification/FINAL_QUALIFICATION_STATUS.md`.
 
 Final adjudicated rows:
 
@@ -121,9 +121,9 @@ Final adjudicated rows:
 - terminal stderr and completed-session readability: PASS;
 - multiple simultaneous sessions: PASS;
 - explicit remote reconnect evidence under the final production build: PASS;
-- incorporation of the now-PASS original P8 sleep-prevention and lifecycle-shutdown evidence into the final matrix: PASS.
+- incorporation of the now-PASS lifecycle qualification sleep-prevention and lifecycle-shutdown evidence into the final matrix: PASS.
 
-This closes the original construction P0-P9 matrix for Daniel Commander v0.1 source qualification. A final `v0.1.0` release tag remains a separate release-management decision.
+This closes the original construction construction matrix matrix for Daniel Commander v0.1 source qualification. A final `v0.1.0` release tag remains a separate release-management decision.
 
 ## Frozen next-step rule
 
@@ -131,7 +131,7 @@ Public RC visibility may proceed only after current release-preflight/CI/privacy
 
 After the Public Visibility Gate, the original authority resumes at the remaining incomplete work:
 
-1. original P8 is now closed/PASS;
-2. original P9 is now closed/PASS;
+1. lifecycle qualification is now closed/PASS;
+2. final qualification is now closed/PASS;
 3. `DANIEL_COMMANDER_V0_1_PASS` may be considered after final source, CI, and live-runtime evidence are attached to the P9 commit;
 4. retire legacy Oracle MCP infrastructure only after the full replacement remains live-qualified and rollback evidence is no longer needed.

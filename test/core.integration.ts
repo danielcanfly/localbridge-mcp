@@ -141,13 +141,13 @@ if (process.platform !== 'win32') {
   await assert.rejects(() => core.readFile(path.join(escape, 'hosts')), /outside allowed directories/i);
 }
 
-console.log('P2_FILESYSTEM_PASS');
-console.log('P2_EDIT_EXACT_PASS');
-console.log('P2_EDIT_FUZZY_PASS');
-console.log('P2_SEARCH_PASS');
-console.log('P2_COMMAND_BLOCKLIST_PASS');
-console.log('P2_TERMINAL_PERSISTENCE_PASS');
-console.log('P2_ALLOWED_DIRECTORY_ESCAPE_PASS');
-console.log('P2_HEADLESS_CORE_PASS');
+console.log('CORE_FILESYSTEM_PASS');
+console.log('CORE_EDIT_EXACT_PASS');
+console.log('CORE_EDIT_FUZZY_PASS');
+console.log('CORE_SEARCH_PASS');
+console.log('CORE_COMMAND_BLOCKLIST_PASS');
+console.log('CORE_TERMINAL_PERSISTENCE_PASS');
+console.log('CORE_ALLOWED_DIRECTORY_ESCAPE_PASS');
+console.log('CORE_HEADLESS_CORE_PASS');
 
 await fs.rm(sandbox, { recursive: true, force: true });

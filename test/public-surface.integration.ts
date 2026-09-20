@@ -17,38 +17,38 @@ assert.match(common, /\/opt\/homebrew\/bin/);
 assert.match(common, /\/usr\/local\/bin/);
 assert.match(service, /DANIEL_COMMANDER_NODE/);
 assert.match(service, /DANIEL_COMMANDER_TUNNEL_CLIENT/);
-console.log('P6_DYNAMIC_TOOL_DISCOVERY_PASS');
+console.log('PUBLIC_DYNAMIC_TOOL_DISCOVERY_PASS');
 
 assert.match(setupCore, /Node\.js >=20/);
 assert.match(setupCore, /npm.*ci|NPM_BIN.*ci/s);
 assert.match(setupCore, /allowedDirectories/);
 assert.doesNotMatch(setupCore, /tunnel-client/);
-console.log('P6_PORTABLE_CORE_SETUP_PASS');
+console.log('PUBLIC_PORTABLE_CORE_SETUP_PASS');
 
 assert.match(setupMac, /--tunnel-id/);
 assert.match(setupMac, /--api-key-ref/);
 assert.match(setupMac, /file:\/\/\*|file:\/\*/);
 assert.match(setupMac, /does not provide a shared hosted relay/i);
 assert.doesNotMatch(setupMac, /--api-key\s/);
-console.log('P6_MACOS_REMOTE_SETUP_PASS');
+console.log('PUBLIC_MACOS_REMOTE_SETUP_PASS');
 
 assert.match(doctor, /DOCTOR_CORE_PASS/);
 assert.match(readme, /does \*\*not\*\* provide a hosted relay/i);
 assert.match(security, /does not sandbox arbitrary terminal commands/i);
 assert.match(portability, /Linux is qualified for the portable stdio core/i);
-console.log('P6_PUBLIC_DOCS_PASS');
+console.log('PUBLIC_PUBLIC_DOCS_PASS');
 
 assert.match(workflow, /ubuntu-latest/);
 assert.match(workflow, /macos-latest/);
 assert.match(workflow, /actions\/checkout@[0-9a-f]{40} # v7/);
 assert.match(workflow, /actions\/setup-node@[0-9a-f]{40} # v7/);
 assert.match(workflow, /npm test/);
-console.log('P6_CI_MATRIX_PASS');
+console.log('PUBLIC_CI_MATRIX_PASS');
 
 assert.equal(pkg.private, true);
-assert.match(pkg.scripts.test, /test:p6/);
-assert.match(pkg.scripts['test:p6'], /p6-public\.integration/);
-console.log('P6_SOURCE_DISTRIBUTION_CONTRACT_PASS');
+assert.match(pkg.scripts.test, /test:public/);
+assert.match(pkg.scripts['test:public'], /public-surface\.integration/);
+console.log('PUBLIC_SOURCE_DISTRIBUTION_CONTRACT_PASS');
 
 const sourceFiles = [
   service, common, setupCore, setupMac, doctor, readme, security, portability
@@ -63,4 +63,4 @@ for (const content of sourceFiles) {
     assert.equal(pattern.test(content), false, `machine-specific path found: ${pattern}`);
   }
 }
-console.log('P6_NO_MACHINE_IDENTITY_PASS');
+console.log('PUBLIC_NO_MACHINE_IDENTITY_PASS');
