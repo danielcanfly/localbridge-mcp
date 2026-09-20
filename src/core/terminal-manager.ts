@@ -99,11 +99,14 @@ interface ShellSpawnConfig {
 function getShellSpawnArgs(shellPath: string, command: string): ShellSpawnConfig {
   const shellName = path.basename(shellPath).toLowerCase();
 
-  // Unix shells with login flag support
+  // Background automation must not force a login shell. Login startup
+  // files are user-controlled and may emit output, start another shell, or
+  // block waiting for input. Inherit the parent environment and execute only
+  // the requested command.
   if (shellName.includes('bash') || shellName.includes('zsh')) {
     return {
       executable: shellPath,
-      args: ['-l', '-c', command],
+      args: ['-c', command],
       useShellOption: false
     };
   }
@@ -136,11 +139,11 @@ function getShellSpawnArgs(shellPath: string, command: string): ShellSpawnConfig
     };
   }
 
-  // Fish shell (uses -l for login, -c for command)
+  // Fish follows the same non-login automation rule.
   if (shellName.includes('fish')) {
     return {
       executable: shellPath,
-      args: ['-l', '-c', command],
+      args: ['-c', command],
       useShellOption: false
     };
   }
@@ -221,6 +224,7 @@ export class TerminalManager {
           TERM: 'xterm-256color'  // Better terminal compatibility
         },
         windowsHide: true,  // Prevent visible console windows on Windows
+        detached: process.platform !== 'win32',
         cwd: workingDirectory
       };
 
@@ -242,6 +246,7 @@ export class TerminalManager {
           TERM: 'xterm-256color'
         },
         windowsHide: true,  // Prevent visible console windows on Windows
+        detached: process.platform !== 'win32',
         cwd: workingDirectory
       };
     }
@@ -325,6 +330,7 @@ export class TerminalManager {
     return new Promise((resolve) => {
       let resolved = false;
       let periodicCheck: NodeJS.Timeout | null = null;
+      let timeoutTimer: NodeJS.Timeout | null = null;
 
       // Quick prompt patterns for immediate detection
       const quickPromptPatterns = />>>\s*$|>\s*$|\$\s*$|#\s*$/;
@@ -333,6 +339,7 @@ export class TerminalManager {
         if (resolved) return;
         resolved = true;
         if (periodicCheck) clearInterval(periodicCheck);
+        if (timeoutTimer) clearTimeout(timeoutTimer);
 
         // Add timing info if requested
         if (collectTiming) {
@@ -461,7 +468,7 @@ export class TerminalManager {
       }, 100);
 
       // Timeout fallback
-      setTimeout(() => {
+      timeoutTimer = setTimeout(() => {
         session.isBlocked = true;
         exitReason = 'timeout';
         resolveOnce({
@@ -524,7 +531,14 @@ export class TerminalManager {
         // First line ever
         session.outputLines.push(line);
       } else if (i === 0) {
-        // First fragment - append to last line (might be partial)
+        // First fragment continues the existing trailing line. If that line was
+        // already consumed by an offset=0 reader, rewind one line before
+        // mutating it so newly appended bytes cannot land behind the read
+        // cursor. Line-based pagination may replay the previous prefix, but it
+        // must never silently lose fresh process output.
+        if (line.length > 0 && session.lastReadIndex >= session.outputLines.length) {
+          session.lastReadIndex = Math.max(0, session.outputLines.length - 1);
+        }
         session.outputLines[session.outputLines.length - 1] += line;
       } else {
         // Subsequent lines - add as new lines
@@ -776,20 +790,41 @@ export class TerminalManager {
       return false;
     }
 
-    try {
-        session.process.kill('SIGINT');
-        setTimeout(() => {
-          if (this.sessions.has(pid)) {
-            session.process.kill('SIGKILL');
-          }
-        }, 1000);
-        return true;
-      } catch (error) {
-        // Convert error to string, handling both Error objects and other types
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Failed to terminate process ${pid}: ${errorMessage}`);
-        return false;
+    const signalProcessTree = (signal: NodeJS.Signals): void => {
+      if (process.platform === 'win32') {
+        session.process.kill(signal);
+        return;
       }
+
+      // POSIX children are spawned in their own process group. Signal the
+      // entire group so shell wrappers cannot leave long-running descendants
+      // orphaned after the MCP session is terminated.
+      try {
+        process.kill(-pid, signal);
+      } catch (error: any) {
+        if (error?.code !== 'ESRCH') throw error;
+      }
+    };
+
+    try {
+      signalProcessTree('SIGINT');
+      const fallback = setTimeout(() => {
+        if (this.sessions.has(pid)) {
+          try {
+            signalProcessTree('SIGKILL');
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error(`Failed to force kill process group ${pid}: ${errorMessage}`);
+          }
+        }
+      }, 1000);
+      fallback.unref?.();
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Failed to terminate process ${pid}: ${errorMessage}`);
+      return false;
+    }
   }
 
   listActiveSessions(): ActiveSession[] {

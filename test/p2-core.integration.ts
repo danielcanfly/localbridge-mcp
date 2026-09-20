@@ -105,6 +105,13 @@ const interactive = await core.startProcess(
   750
 );
 assert.equal(interactive.pid > 0, true);
+
+// Force the read cursor past the prompt before sending stdin. This reproduces
+// the chunk-boundary race that hosted runners exposed: later bytes can extend
+// the trailing line that was already consumed.
+const initialInteractive = core.readProcessOutput(interactive.pid, 0, 100);
+assert.match(initialInteractive.lines.join('\n'), /READY>/);
+
 assert.equal(await core.interactWithProcess(interactive.pid, 'hello'), true);
 let out = core.readProcessOutput(interactive.pid, 0, 100);
 for (let i = 0; i < 40 && !out.lines.join('\n').includes('ECHO:hello'); i++) {
@@ -116,6 +123,19 @@ assert.equal(core.listSessions().active.some((s: any) => s.pid === interactive.p
 assert.equal(core.forceTerminate(interactive.pid), true);
 
 if (process.platform !== 'win32') {
+  let processGroupAlive = true;
+  for (let i = 0; i < 40 && processGroupAlive; i++) {
+    await new Promise(r => setTimeout(r, 50));
+    try {
+      process.kill(-interactive.pid, 0);
+    } catch (error: any) {
+      if (error?.code === 'ESRCH') processGroupAlive = false;
+      else throw error;
+    }
+  }
+  assert.equal(processGroupAlive, false, 'terminated session must not leave a POSIX process group orphan');
+
+
   const escape = path.join(workspace, 'escape');
   await fs.symlink('/etc', escape);
   await assert.rejects(() => core.readFile(path.join(escape, 'hosts')), /outside allowed directories/i);
