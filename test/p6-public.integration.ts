@@ -40,8 +40,8 @@ console.log('P6_PUBLIC_DOCS_PASS');
 
 assert.match(workflow, /ubuntu-latest/);
 assert.match(workflow, /macos-latest/);
-assert.match(workflow, /actions\/checkout@v7/);
-assert.match(workflow, /actions\/setup-node@v7/);
+assert.match(workflow, /actions\/checkout@[0-9a-f]{40} # v7/);
+assert.match(workflow, /actions\/setup-node@[0-9a-f]{40} # v7/);
 assert.match(workflow, /npm test/);
 console.log('P6_CI_MATRIX_PASS');
 

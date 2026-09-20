@@ -44,3 +44,19 @@ Use this before changing the GitHub repository from private to public.
 - [ ] Visibility change is performed only as an explicit owner action.
 
 P6 intentionally does not flip repository visibility automatically.
+
+## P7 release-candidate gates
+
+- [ ] Package version is `0.1.0-rc.1` and `private: true` remains set.
+- [ ] GitHub Actions references are pinned to exact commit SHAs.
+- [ ] CodeQL workflow is present and remains gated until repository visibility is public.
+- [ ] Dependabot vulnerability alerts are enabled.
+- [ ] Automated security fixes are enabled.
+- [ ] Issue and pull-request templates are present.
+- [ ] `./scripts/release-preflight.sh` passes from a clean main checkout.
+- [ ] Final macOS/Linux CI matrix passes.
+- [ ] Annotated tag `v0.1.0-rc.1` points at the final RC commit.
+- [ ] Draft prerelease exists and remains unpublished until the owner chooses the public-visibility gate.
+- [ ] `./scripts/github-public-finalize.sh` reports `OWNER_PUBLIC_VISIBILITY_GATE_PENDING` while private.
+- [ ] After visibility becomes public, run `./scripts/github-public-finalize.sh --apply`.
+- [ ] Main branch protection is enabled only if the owner intentionally accepts the PR/check workflow change.

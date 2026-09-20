@@ -1,0 +1,24 @@
+name: Feature request
+description: Propose a focused capability or portability improvement
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Describe the workflow gap before proposing implementation details.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed capability
+    validations:
+      required: true
+  - type: textarea
+    id: security
+    attributes:
+      label: Security / privilege impact
+      description: Explain whether this changes filesystem, terminal, network, remote-access, or credential boundaries.

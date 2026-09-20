@@ -1,6 +1,6 @@
 {
   "name": "@danielcanfly/daniel-commander",
-  "version": "0.1.0-dev",
+  "version": "0.1.0-rc.1",
   "private": true,
   "type": "module",
   "description": "Minimal headless MCP computer-control core for Daniel Commander.",
@@ -10,12 +10,14 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test:p2": "npm run build && node dist/test/p2-core.integration.js",
-    "test": "npm run test:p2 && npm run test:p3 && npm run test:p4 && npm run test:p5 && npm run test:p6",
+    "test": "npm run test:p2 && npm run test:p3 && npm run test:p4 && npm run test:p5 && npm run test:p6 && npm run test:p7",
     "test:p3": "npm run build && node dist/test/p3-mcp.integration.js",
     "test:p4": "npm run build && node dist/test/p4-policy.integration.js",
     "test:p5": "node scripts/test-p5.mjs",
     "test:p6": "npm run build && node dist/test/p6-public.integration.js",
-    "doctor": "./scripts/doctor.sh"
+    "doctor": "./scripts/doctor.sh",
+    "test:p7": "npm run build && node dist/test/p7-release.integration.js",
+    "release:preflight": "./scripts/release-preflight.sh"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",

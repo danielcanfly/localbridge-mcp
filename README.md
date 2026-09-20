@@ -4,7 +4,7 @@ Daniel Commander is a self-hosted MCP computer-control server for local files, s
 
 It does **not** provide a hosted relay. Each user runs their own MCP server and owns their own machine, credentials, tunnel, and remote hosts.
 
-Status: pre-alpha. The portable stdio core is qualified on macOS and Linux. The persistent login runtime is currently qualified on macOS.
+Current source version: **v0.1.0-rc.1**. The portable stdio core is qualified on macOS and Linux. The persistent login runtime is qualified on macOS. npm publication remains disabled; releases are source-only.
 
 ## What it exposes
 
@@ -141,3 +141,9 @@ The npm package is marked `private` intentionally. This repository is source dis
 - P6: public-ready setup, portability, clean-room install, documentation, CI, and release privacy gates
 
 Detailed qualification evidence is under `docs/`.
+
+## Releases
+
+See [CHANGELOG.md](CHANGELOG.md) for release notes and [docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md) for the release workflow.
+
+The current release candidate is `v0.1.0-rc.1`. GitHub source releases are supported; npm publishing and prebuilt/notarized Runtime.app binaries are not currently offered.

@@ -1,0 +1,52 @@
+name: Bug report
+description: Report a reproducible Daniel Commander defect
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include API keys, tunnel credentials, SSH private keys, private hostnames, or other secrets.
+  - type: input
+    id: version
+    attributes:
+      label: Daniel Commander version or commit
+      placeholder: v0.1.0-rc.1 or commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - macOS
+        - Linux
+        - Windows / not currently qualified
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: Redact credentials and private machine details.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Output from scripts/doctor.sh, with anything sensitive removed.
