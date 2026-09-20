@@ -2,6 +2,7 @@
 // MIT licensed. See LICENSE and THIRD_PARTY_NOTICES.md.
 import { spawn } from 'child_process';
 import path from 'path';
+import os from 'os';
 import { TerminalSession, CommandExecutionResult, ActiveSession, TimingInfo, OutputEvent } from '../types.js';
 import { DEFAULT_COMMAND_TIMEOUT } from '../config.js';
 import { configManager } from '../config-manager.js';
@@ -18,6 +19,14 @@ import { analyzeProcessState } from './process-detection.js';
  * etc. (and even full-path .exe invocations under PowerShell). See issue #481.
  */
 const STANDARD_PATHEXT = '.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC';
+
+function getSafeWorkingDirectory(): string {
+  try {
+    return process.cwd();
+  } catch {
+    return os.homedir();
+  }
+}
 
 /**
  * Return a healthy PATHEXT for spawned Windows shells.
@@ -201,6 +210,7 @@ export class TerminalManager {
     // Get the appropriate spawn configuration for the shell
     let spawnConfig: ShellSpawnConfig;
     let spawnOptions: any;
+    const workingDirectory = getSafeWorkingDirectory();
 
     if (typeof shellToUse === 'string') {
       // Use shell-specific configuration with login flags where appropriate
@@ -210,7 +220,8 @@ export class TerminalManager {
           ...process.env,
           TERM: 'xterm-256color'  // Better terminal compatibility
         },
-        windowsHide: true  // Prevent visible console windows on Windows
+        windowsHide: true,  // Prevent visible console windows on Windows
+        cwd: workingDirectory
       };
 
       // Add shell option if needed (for unknown shells)
@@ -230,7 +241,8 @@ export class TerminalManager {
           ...process.env,
           TERM: 'xterm-256color'
         },
-        windowsHide: true  // Prevent visible console windows on Windows
+        windowsHide: true,  // Prevent visible console windows on Windows
+        cwd: workingDirectory
       };
     }
 
@@ -459,7 +471,10 @@ export class TerminalManager {
         });
       }, timeoutMs);
 
-      childProcess.on('exit', (code: any) => {
+      // Resolve completion on 'close', not 'exit'. Node may emit 'exit'
+      // before stdout/stderr have fully drained, which can make short-lived
+      // commands nondeterministically return an empty output string.
+      childProcess.on('close', (code: number | null) => {
         if (childProcess.pid) {
           // Store completed session before removing active session
           this.completedSessions.set(childProcess.pid, {

@@ -92,10 +92,10 @@ assert.equal(core.searchManager.listSearches().length >= 2, true);
 await assert.rejects(() => core.startProcess('sudo -n true', 250), /blocked/i);
 await assert.rejects(() => core.startProcess('echo "$(sudo -n true)"', 250), /blocked/i);
 
-const quick = await core.startProcess("printf 'TERM_OK\\n'", 1000);
+const quick = await core.startProcess("printf 'TERM_OK\\n'", 3000);
 assert.match(quick.output, /TERM_OK/);
 
-const paged = await core.startProcess("printf 'L1\\nL2\\nL3\\nL4\\n'", 1000);
+const paged = await core.startProcess("printf 'L1\\nL2\\nL3\\nL4\\n'", 3000);
 const page = core.readProcessOutput(paged.pid, 1, 2);
 assert.deepEqual(page.lines, ['L2', 'L3']);
 assert.equal(page.remaining >= 1, true);

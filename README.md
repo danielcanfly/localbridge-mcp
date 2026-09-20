@@ -2,7 +2,7 @@
 
 Self-hosted MCP computer-control server for local files, search, surgical editing, persistent terminal sessions, and SSH workflows.
 
-> Status: pre-alpha. P0, P1, and the P2 headless-core qualification are complete. MCP tool registration remains a later phase.
+> Status: pre-alpha. P0 through P3 are qualified. The 17-tool MCP surface works locally and from ChatGPT Plus through OpenAI Secure MCP Tunnel.
 
 ## Design goals
 
@@ -13,11 +13,28 @@ Self-hosted MCP computer-control server for local files, search, surgical editin
 - Keep terminal sessions interactive across MCP tool calls.
 - Keep the runtime small by excluding PDF, DOCX, Excel, image-preview, UI, onboarding, and hosted-remote product code.
 
-## Current headless core
+## Current MCP surface
 
-P2 includes allowed-directory constrained text filesystem operations, ripgrep search sessions, exact and fuzzy editing, command blocklist parsing, persistent terminal sessions, stdin interaction, paginated output, session listing, and termination.
+Daniel Commander exposes 17 focused tools covering:
 
-The selected upstream-derived logic is pinned to Desktop Commander MCP v0.2.51 commit `092ce0b841e86455f12e41f4dc36399a7522ecb5`. See `THIRD_PARTY_NOTICES.md` and `docs/P2_SOURCE_CENSUS.md`.
+- text filesystem read/write/list/create/move/info
+- exact and fuzzy block editing
+- asynchronous ripgrep filename/content search
+- persistent terminal process start/output/stdin/session/termination
+
+The selected upstream-derived core is pinned to Desktop Commander MCP v0.2.51 commit `092ce0b841e86455f12e41f4dc36399a7522ecb5`. See `THIRD_PARTY_NOTICES.md`, `docs/P2_SOURCE_CENSUS.md`, and `docs/P3_STATUS.md`.
+
+## Remote path
+
+The qualified ChatGPT path is:
+
+    ChatGPT
+      -> personal development plugin
+      -> OpenAI Secure MCP Tunnel
+      -> tunnel-client on the user's machine
+      -> Daniel Commander stdio MCP
+
+No Desktop Commander Cloud relay is required by Daniel Commander.
 
 ## Security
 

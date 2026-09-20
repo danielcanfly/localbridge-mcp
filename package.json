@@ -10,13 +10,17 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test:p2": "npm run build && node dist/test/p2-core.integration.js",
-    "test": "npm run test:p2"
+    "test": "npm run test:p2 && npm run test:p3",
+    "test:p3": "npm run build && node dist/test/p3-mcp.integration.js"
   },
   "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
     "@vscode/ripgrep": "^1.15.9",
-    "fastest-levenshtein": "^1.0.16"
+    "fastest-levenshtein": "^1.0.16",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@modelcontextprotocol/client": "^2.0.0",
     "@types/node": "^22.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.0"
