@@ -3,7 +3,7 @@
 [![CI](https://github.com/danielcanfly/localbridge-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/danielcanfly/localbridge-mcp/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/danielcanfly/localbridge-mcp/actions/workflows/codeql.yml/badge.svg)](https://github.com/danielcanfly/localbridge-mcp/actions/workflows/codeql.yml)
 [![Release](https://img.shields.io/github/v/release/danielcanfly/localbridge-mcp?label=release)](https://github.com/danielcanfly/localbridge-mcp/releases)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 LocalBridge MCP is a self-hosted MCP server that lets online AI assistants work with a local computer through a controlled, user-owned bridge.
 
@@ -315,6 +315,6 @@ The release preflight runs the test suite, checks dependency licenses, creates a
 
 ## Provenance and license
 
-LocalBridge MCP is released under the [MIT License](LICENSE).
+LocalBridge MCP is released under the [Apache License 2.0](LICENSE).
 
 Selected execution-core code is derived from Desktop Commander MCP under the MIT license. Required third-party license and provenance notices are preserved in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
