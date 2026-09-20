@@ -133,31 +133,31 @@ try {
   console.log('FINAL_SEARCH_MATRIX_PASS');
 
   const completed = await core.startProcess(
-    `node -e "console.log('P9_STDOUT_READY'); console.error('P9_STDERR_READY')"`,
+    `node -e "console.log('FINAL_STDOUT_READY'); console.error('FINAL_STDERR_READY')"`,
     5000
   );
   assert.equal(completed.isBlocked, false);
   let completedOutput = core.readProcessOutput(completed.pid, -20, 20);
   assert.equal(completedOutput.isComplete, true);
   assert.equal(completedOutput.exitCode, 0);
-  assert.match(completedOutput.lines.join('\n'), /P9_STDOUT_READY/);
-  assert.match(completedOutput.lines.join('\n'), /P9_STDERR_READY/);
+  assert.match(completedOutput.lines.join('\n'), /FINAL_STDOUT_READY/);
+  assert.match(completedOutput.lines.join('\n'), /FINAL_STDERR_READY/);
   assert(core.listSessions().completed.some((s: any) => s.pid === completed.pid && s.exitCode === 0));
   completedOutput = core.readProcessOutput(completed.pid, 0, 20);
-  assert.match(completedOutput.lines.join('\n'), /P9_STDOUT_READY|P9_STDERR_READY/);
+  assert.match(completedOutput.lines.join('\n'), /FINAL_STDOUT_READY|FINAL_STDERR_READY/);
   console.log('FINAL_TERMINAL_STDERR_COMPLETED_READABILITY_PASS');
 
   const slowCommand = (label: string) =>
     `node -e "console.log('${label}_READY'); setInterval(()=>{}, 1000)"`;
-  const first = await core.startProcess(slowCommand('P9_FIRST'), 750);
-  const second = await core.startProcess(slowCommand('P9_SECOND'), 750);
+  const first = await core.startProcess(slowCommand('FINAL_FIRST'), 750);
+  const second = await core.startProcess(slowCommand('FINAL_SECOND'), 750);
   assert.equal(first.pid > 0, true);
   assert.equal(second.pid > 0, true);
   assert.notEqual(first.pid, second.pid);
   assert(core.listSessions().active.some((s: any) => s.pid === first.pid));
   assert(core.listSessions().active.some((s: any) => s.pid === second.pid));
-  assert.match(core.readProcessOutput(first.pid, -20, 20).lines.join('\n'), /P9_FIRST_READY/);
-  assert.match(core.readProcessOutput(second.pid, -20, 20).lines.join('\n'), /P9_SECOND_READY/);
+  assert.match(core.readProcessOutput(first.pid, -20, 20).lines.join('\n'), /FINAL_FIRST_READY/);
+  assert.match(core.readProcessOutput(second.pid, -20, 20).lines.join('\n'), /FINAL_SECOND_READY/);
   assert.equal(core.forceTerminate(first.pid), true);
   assert.equal(core.forceTerminate(second.pid), true);
   const gone = await waitUntil(() => !core.listSessions().active.some((s: any) => s.pid === first.pid || s.pid === second.pid));

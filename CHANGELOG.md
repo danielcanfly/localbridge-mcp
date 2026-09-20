@@ -57,7 +57,7 @@ First public-release candidate.
 
 ### Hardened
 
-- Removed the one-off P1 Gate qualification scaffold from release source.
+- Removed the one-off transport-gate qualification scaffold from release source.
 - Synchronized the MCP server protocol version with the package release version.
 - Removed unused telemetry-derived fuzzy-search timing payloads.
 - Activated `fileWriteLineLimit` as an advisory write-chunk warning instead of leaving a dead configuration key.

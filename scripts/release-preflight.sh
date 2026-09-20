@@ -22,7 +22,7 @@ esac
 [ "$PRIVATE" = "true" ] || fail "npm package must remain private"
 
 if git ls-tree -r --name-only HEAD | grep -q '^gate/'; then
-  fail "temporary P1 gate scaffold must not ship in the release tree"
+  fail "temporary transport-gate scaffold must not ship in the release tree"
 fi
 
 npm test
