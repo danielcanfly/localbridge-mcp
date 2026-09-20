@@ -10,7 +10,7 @@ run(process.execPath, ['--version']);
 run('npm', ['run', 'build']);
 
 if (process.platform === 'darwin') {
-  run('/usr/bin/swiftc', ['-typecheck', 'runtime-app/DanielCommanderRuntime.swift']);
+  run('/usr/bin/swiftc', ['-typecheck', 'runtime-app/LocalBridgeMCPRuntime.swift']);
 } else {
   console.log('RUNTIME_SWIFT_TYPECHECK_SKIPPED_NON_DARWIN');
 }

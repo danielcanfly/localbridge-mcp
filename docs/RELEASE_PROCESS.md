@@ -1,6 +1,6 @@
 # Release process
 
-Daniel Commander uses source-only GitHub releases. npm publication remains disabled.
+LocalBridge MCP uses source-only GitHub releases. npm publication remains disabled.
 
 ## Current product release
 
@@ -37,7 +37,7 @@ CodeQL must also pass when the repository is public.
 
 Create an annotated release tag only after the final release commit and CI are green:
 
-    git tag -a v0.2.0 -m "Daniel Commander v0.2.0"
+    git tag -a v0.2.0 -m "LocalBridge MCP v0.2.0"
     git push origin v0.2.0
 
 ## 4. Draft GitHub release

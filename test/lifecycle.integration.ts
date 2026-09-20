@@ -13,8 +13,8 @@ assert.match(wrapper, /\/usr\/bin\/caffeinate -i -w "\$tunnel_pid"/);
 assert.match(wrapper, /"\$REAL_TUNNEL_CLIENT" "\$@" &/);
 assert.match(wrapper, /CAFFEINATE_PID_FILE/);
 assert.match(wrapper, /trap forward_stop TERM INT/);
-assert.match(service, /DANIEL_COMMANDER_TUNNEL_CLIENT": tunnel_wrapper/);
-assert.match(service, /DANIEL_COMMANDER_REAL_TUNNEL_CLIENT": tunnel_client/);
+assert.match(service, /LOCALBRIDGE_MCP_TUNNEL_CLIENT": tunnel_wrapper/);
+assert.match(service, /LOCALBRIDGE_MCP_REAL_TUNNEL_CLIENT": tunnel_client/);
 assert.match(status, /caffeinate\.pid/);
 assert.match(status, /CAFFEINATE_COUNT=/);
 assert.match(status, /CAFFEINATE_PID=/);
@@ -55,12 +55,12 @@ async function waitFor(
 }
 
 if (process.platform === 'darwin') {
-  const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), 'daniel-commander-p8-'));
+  const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), 'localbridge-mcp-p8-'));
   const child = spawn(wrapperPath, ['30'], {
     env: {
       ...process.env,
-      DANIEL_COMMANDER_REAL_TUNNEL_CLIENT: '/bin/sleep',
-      DANIEL_COMMANDER_STATE_DIR: stateDir
+      LOCALBRIDGE_MCP_REAL_TUNNEL_CLIENT: '/bin/sleep',
+      LOCALBRIDGE_MCP_STATE_DIR: stateDir
     },
     stdio: 'ignore'
   });

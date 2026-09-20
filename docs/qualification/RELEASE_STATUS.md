@@ -4,7 +4,7 @@ Status: READY_FOR_OWNER_PUBLIC_VISIBILITY_GATE on 2026-09-20.
 
 ## Goal
 
-P7 qualifies Daniel Commander for an explicit owner-controlled transition from private development repository to public source project.
+P7 qualifies LocalBridge MCP for an explicit owner-controlled transition from private development repository to public source project.
 
 P7 does not change repository visibility automatically.
 
@@ -114,6 +114,6 @@ The audit found no missing original P0-P7 capability, but it found phase-number 
 - `fileWriteLineLimit` was exposed as configuration but had no effect;
 - direct-start config creation did not explicitly harden the config directory to mode 0700.
 
-The audit originally found lifecycle qualification partial because active-only `caffeinate` / no-sleep behavior was missing. v0.1.0-rc.2 closes that P8 lifecycle gap. Final qualification remains a separate row-by-row final qualification before any `DANIEL_COMMANDER_V0_1_PASS` declaration.
+The audit originally found lifecycle qualification partial because active-only `caffeinate` / no-sleep behavior was missing. v0.1.0-rc.2 closes that P8 lifecycle gap. Final qualification remains a separate row-by-row final qualification before any `LOCALBRIDGE_MCP_V0_1_PASS` declaration.
 
 See `docs/qualification/CONSTRUCTION_MATRIX.md` for the authority mapping.

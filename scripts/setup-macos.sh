@@ -3,13 +3,13 @@ set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
-PROFILE="daniel-prod"
+PROFILE="localbridge-prod"
 TUNNEL_ID=""
 API_KEY_REF=""
 HEALTH_ADDR="127.0.0.1:43127"
 FORCE_PROFILE=0
 NO_SERVICE=0
-ALLOW_FILE=$(mktemp "${TMPDIR:-/tmp}/daniel-commander-allow.XXXXXX")
+ALLOW_FILE=$(mktemp "${TMPDIR:-/tmp}/localbridge-mcp-allow.XXXXXX")
 trap 'rm -f "$ALLOW_FILE"' EXIT HUP INT TERM
 
 # shellcheck source=macos-common.sh
@@ -100,9 +100,9 @@ done < "$ALLOW_FILE"
 
 "$SCRIPT_DIR/setup-core.sh" "$@"
 
-NODE_BIN=$(dc_find_tool "${DANIEL_COMMANDER_NODE:-}" node) || { echo "node not found"; exit 2; }
-TUNNEL_CLIENT_BIN=$(dc_find_tool "${DANIEL_COMMANDER_TUNNEL_CLIENT:-}" tunnel-client) || {
-  echo "tunnel-client not found; install it first or set DANIEL_COMMANDER_TUNNEL_CLIENT" >&2
+NODE_BIN=$(lb_find_tool "${LOCALBRIDGE_MCP_NODE:-}" node) || { echo "node not found"; exit 2; }
+TUNNEL_CLIENT_BIN=$(lb_find_tool "${LOCALBRIDGE_MCP_TUNNEL_CLIENT:-}" tunnel-client) || {
+  echo "tunnel-client not found; install it first or set LOCALBRIDGE_MCP_TUNNEL_CLIENT" >&2
   exit 2
 }
 
@@ -123,14 +123,14 @@ if [ "$NO_SERVICE" -eq 1 ]; then
   exit 0
 fi
 
-SWIFTC_BIN=$(dc_find_tool "${DANIEL_COMMANDER_SWIFTC:-}" swiftc) || {
+SWIFTC_BIN=$(lb_find_tool "${LOCALBRIDGE_MCP_SWIFTC:-}" swiftc) || {
   echo "swiftc not found; install Xcode Command Line Tools" >&2
   exit 2
 }
 command -v codesign >/dev/null 2>&1 || { echo "codesign not found" >&2; exit 2; }
 
-DANIEL_COMMANDER_PROFILE="$PROFILE" DANIEL_COMMANDER_NODE="$NODE_BIN" DANIEL_COMMANDER_TUNNEL_CLIENT="$TUNNEL_CLIENT_BIN" DANIEL_COMMANDER_SWIFTC="$SWIFTC_BIN" DANIEL_COMMANDER_HEALTH_LISTEN_ADDR="$HEALTH_ADDR" TUNNEL_CLIENT_PROFILE_DIR="$PROFILE_DIR"   "$SCRIPT_DIR/macos-service.sh" install
+LOCALBRIDGE_MCP_PROFILE="$PROFILE" LOCALBRIDGE_MCP_NODE="$NODE_BIN" LOCALBRIDGE_MCP_TUNNEL_CLIENT="$TUNNEL_CLIENT_BIN" LOCALBRIDGE_MCP_SWIFTC="$SWIFTC_BIN" LOCALBRIDGE_MCP_HEALTH_LISTEN_ADDR="$HEALTH_ADDR" TUNNEL_CLIENT_PROFILE_DIR="$PROFILE_DIR"   "$SCRIPT_DIR/macos-service.sh" install
 
 echo "MACOS_REMOTE_SETUP_PASS"
 echo "PROFILE=$PROFILE"
-echo "SERVICE_LABEL=${DANIEL_COMMANDER_LAUNCHD_LABEL:-com.danielcanfly.daniel-commander}"
+echo "SERVICE_LABEL=${LOCALBRIDGE_MCP_LAUNCHD_LABEL:-io.localbridge.mcp}"

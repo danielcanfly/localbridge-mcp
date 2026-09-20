@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Shared macOS tool discovery. Explicit overrides always win.
-dc_find_tool() {
+lb_find_tool() {
   override="$1"
   name="$2"
 
@@ -30,11 +30,11 @@ dc_find_tool() {
   return 1
 }
 
-dc_node_major() {
+lb_node_major() {
   "$1" -p 'Number(process.versions.node.split(".")[0])'
 }
 
-dc_runtime_path() {
+lb_runtime_path() {
   node_dir=$(dirname "$1")
   tunnel_dir=$(dirname "$2")
   printf '%s\n' "$node_dir:$tunnel_dir:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"

@@ -32,7 +32,7 @@ final class SupervisorState: @unchecked Sendable {
 let fm = FileManager.default
 let env = ProcessInfo.processInfo.environment
 let home = fm.homeDirectoryForCurrentUser
-let profile = env["DANIEL_COMMANDER_PROFILE"] ?? "daniel-prod"
+let profile = env["LOCALBRIDGE_MCP_PROFILE"] ?? "localbridge-prod"
 
 func resolveExecutable(override: String?, name: String) -> String {
     if let override, !override.isEmpty {
@@ -48,11 +48,11 @@ func resolveExecutable(override: String?, name: String) -> String {
     return name
 }
 
-let tunnelClient = resolveExecutable(override: env["DANIEL_COMMANDER_TUNNEL_CLIENT"], name: "tunnel-client")
-let stateDir = URL(fileURLWithPath: env["DANIEL_COMMANDER_STATE_DIR"] ?? home.appendingPathComponent(".local/state/daniel-commander").path)
-let logDir = URL(fileURLWithPath: env["DANIEL_COMMANDER_LOG_DIR"] ?? home.appendingPathComponent("Library/Logs/DanielCommander").path)
-let runtimeRoot = URL(fileURLWithPath: env["DANIEL_COMMANDER_RUNTIME_ROOT"] ?? home.appendingPathComponent(".local/share/daniel-commander/runtime").path)
-let configURL = home.appendingPathComponent(".config/daniel-commander/config.json")
+let tunnelClient = resolveExecutable(override: env["LOCALBRIDGE_MCP_TUNNEL_CLIENT"], name: "tunnel-client")
+let stateDir = URL(fileURLWithPath: env["LOCALBRIDGE_MCP_STATE_DIR"] ?? home.appendingPathComponent(".local/state/localbridge-mcp").path)
+let logDir = URL(fileURLWithPath: env["LOCALBRIDGE_MCP_LOG_DIR"] ?? home.appendingPathComponent("Library/Logs/LocalBridgeMCP").path)
+let runtimeRoot = URL(fileURLWithPath: env["LOCALBRIDGE_MCP_RUNTIME_ROOT"] ?? home.appendingPathComponent(".local/share/localbridge-mcp/runtime").path)
+let configURL = home.appendingPathComponent(".config/localbridge-mcp/config.json")
 let appLog = logDir.appendingPathComponent("runtime-app.log")
 let childLog = logDir.appendingPathComponent("runtime-child.log")
 let tccStatus = stateDir.appendingPathComponent("tcc-status")

@@ -1,9 +1,9 @@
 {
-  "name": "@danielcanfly/daniel-commander",
+  "name": "localbridge-mcp",
   "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Minimal headless MCP computer-control core for Daniel Commander.",
+  "description": "Minimal headless MCP computer-control core for LocalBridge MCP.",
   "engines": {
     "node": ">=20"
   },

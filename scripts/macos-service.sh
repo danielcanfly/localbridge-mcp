@@ -1,10 +1,10 @@
 #!/bin/sh
 set -eu
 
-LABEL="${DANIEL_COMMANDER_LAUNCHD_LABEL:-com.danielcanfly.daniel-commander}"
-BUNDLE_ID="${DANIEL_COMMANDER_BUNDLE_ID:-com.danielcanfly.daniel-commander.runtime}"
-PROFILE="${DANIEL_COMMANDER_PROFILE:-daniel-prod}"
-HEALTH_LISTEN_ADDR="${DANIEL_COMMANDER_HEALTH_LISTEN_ADDR:-127.0.0.1:43127}"
+LABEL="${LOCALBRIDGE_MCP_LAUNCHD_LABEL:-io.localbridge.mcp}"
+BUNDLE_ID="${LOCALBRIDGE_MCP_BUNDLE_ID:-io.localbridge.mcp.runtime}"
+PROFILE="${LOCALBRIDGE_MCP_PROFILE:-localbridge-prod}"
+HEALTH_LISTEN_ADDR="${LOCALBRIDGE_MCP_HEALTH_LISTEN_ADDR:-127.0.0.1:43127}"
 DOMAIN="gui/$(id -u)"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -12,12 +12,12 @@ REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 STATUS="$SCRIPT_DIR/macos-runtime-status.sh"
 PROFILE_DIR="${TUNNEL_CLIENT_PROFILE_DIR:-$HOME/.config/tunnel-client}"
 PROFILE_FILE="$PROFILE_DIR/$PROFILE.yaml"
-STATE_DIR="${DANIEL_COMMANDER_STATE_DIR:-$HOME/.local/state/daniel-commander}"
-LOG_DIR="${DANIEL_COMMANDER_LOG_DIR:-$HOME/Library/Logs/DanielCommander}"
-RUNTIME_ROOT="${DANIEL_COMMANDER_RUNTIME_ROOT:-$HOME/.local/share/daniel-commander/runtime}"
-APP="${DANIEL_COMMANDER_RUNTIME_APP:-$HOME/Applications/Daniel Commander Runtime.app}"
-APP_EXE="$APP/Contents/MacOS/DanielCommanderRuntime"
-APP_SOURCE="$REPO_ROOT/runtime-app/DanielCommanderRuntime.swift"
+STATE_DIR="${LOCALBRIDGE_MCP_STATE_DIR:-$HOME/.local/state/localbridge-mcp}"
+LOG_DIR="${LOCALBRIDGE_MCP_LOG_DIR:-$HOME/Library/Logs/LocalBridgeMCP}"
+RUNTIME_ROOT="${LOCALBRIDGE_MCP_RUNTIME_ROOT:-$HOME/.local/share/localbridge-mcp/runtime}"
+APP="${LOCALBRIDGE_MCP_RUNTIME_APP:-$HOME/Applications/LocalBridge MCP Runtime.app}"
+APP_EXE="$APP/Contents/MacOS/LocalBridgeMCPRuntime"
+APP_SOURCE="$REPO_ROOT/runtime-app/LocalBridgeMCPRuntime.swift"
 TUNNEL_WRAPPER_SOURCE="$REPO_ROOT/scripts/macos-tunnel-wrapper.sh"
 TUNNEL_WRAPPER="$RUNTIME_ROOT/bin/tunnel-client-supervised"
 
@@ -25,30 +25,30 @@ TUNNEL_WRAPPER="$RUNTIME_ROOT/bin/tunnel-client-supervised"
 . "$SCRIPT_DIR/macos-common.sh"
 
 discover_tools() {
-  NODE_BIN=$(dc_find_tool "${DANIEL_COMMANDER_NODE:-}" node) || { echo "node not found"; exit 2; }
+  NODE_BIN=$(lb_find_tool "${LOCALBRIDGE_MCP_NODE:-}" node) || { echo "node not found"; exit 2; }
 
-  if [ -n "${DANIEL_COMMANDER_NPM:-}" ]; then
-    NPM_BIN=$(dc_find_tool "$DANIEL_COMMANDER_NPM" npm) || { echo "npm not found"; exit 2; }
+  if [ -n "${LOCALBRIDGE_MCP_NPM:-}" ]; then
+    NPM_BIN=$(lb_find_tool "$LOCALBRIDGE_MCP_NPM" npm) || { echo "npm not found"; exit 2; }
   elif [ -x "$(dirname "$NODE_BIN")/npm" ]; then
     NPM_BIN="$(dirname "$NODE_BIN")/npm"
   else
-    NPM_BIN=$(dc_find_tool "" npm) || { echo "npm not found"; exit 2; }
+    NPM_BIN=$(lb_find_tool "" npm) || { echo "npm not found"; exit 2; }
   fi
 
-  TUNNEL_CLIENT_BIN=$(dc_find_tool "${DANIEL_COMMANDER_TUNNEL_CLIENT:-}" tunnel-client) || {
-    echo "tunnel-client not found; set DANIEL_COMMANDER_TUNNEL_CLIENT to its absolute path" >&2
+  TUNNEL_CLIENT_BIN=$(lb_find_tool "${LOCALBRIDGE_MCP_TUNNEL_CLIENT:-}" tunnel-client) || {
+    echo "tunnel-client not found; set LOCALBRIDGE_MCP_TUNNEL_CLIENT to its absolute path" >&2
     exit 2
   }
 
-  SWIFTC_BIN=$(dc_find_tool "${DANIEL_COMMANDER_SWIFTC:-}" swiftc) || {
+  SWIFTC_BIN=$(lb_find_tool "${LOCALBRIDGE_MCP_SWIFTC:-}" swiftc) || {
     echo "swiftc not found; install Xcode Command Line Tools" >&2
     exit 2
   }
 
-  NODE_MAJOR=$(dc_node_major "$NODE_BIN")
+  NODE_MAJOR=$(lb_node_major "$NODE_BIN")
   [ "$NODE_MAJOR" -ge 20 ] || { echo "Node.js >=20 required; found $NODE_MAJOR"; exit 2; }
 
-  RUNTIME_PATH=$(dc_runtime_path "$NODE_BIN" "$TUNNEL_CLIENT_BIN")
+  RUNTIME_PATH=$(lb_runtime_path "$NODE_BIN" "$TUNNEL_CLIENT_BIN")
 }
 
 deploy_runtime() {
@@ -90,15 +90,15 @@ build_app_if_missing() {
 import plistlib, sys
 path, bundle_id = sys.argv[1:]
 data = {
-    "CFBundleExecutable": "DanielCommanderRuntime",
+    "CFBundleExecutable": "LocalBridgeMCPRuntime",
     "CFBundleIdentifier": bundle_id,
-    "CFBundleName": "Daniel Commander Runtime",
+    "CFBundleName": "LocalBridge MCP Runtime",
     "CFBundlePackageType": "APPL",
     "CFBundleShortVersionString": "1.0",
     "CFBundleVersion": "1",
     "LSUIElement": True,
-    "NSDocumentsFolderUsageDescription": "Daniel Commander needs access to the Documents folders you explicitly allow it to operate on.",
-    "NSDesktopFolderUsageDescription": "Daniel Commander needs access to the Desktop folders you explicitly allow it to operate on.",
+    "NSDocumentsFolderUsageDescription": "LocalBridge MCP needs access to the Documents folders you explicitly allow it to operate on.",
+    "NSDesktopFolderUsageDescription": "LocalBridge MCP needs access to the Desktop folders you explicitly allow it to operate on.",
 }
 with open(path, "wb") as fh:
     plistlib.dump(data, fh, sort_keys=True)
@@ -141,13 +141,13 @@ data = {
     "WorkingDirectory": runtime_root,
     "EnvironmentVariables": {
         "PATH": runtime_path,
-        "DANIEL_COMMANDER_PROFILE": profile,
+        "LOCALBRIDGE_MCP_PROFILE": profile,
         "TUNNEL_CLIENT_PROFILE_DIR": profile_dir,
-        "DANIEL_COMMANDER_STATE_DIR": state_dir,
-        "DANIEL_COMMANDER_LOG_DIR": log_dir,
-        "DANIEL_COMMANDER_RUNTIME_ROOT": runtime_root,
-        "DANIEL_COMMANDER_TUNNEL_CLIENT": tunnel_wrapper,
-        "DANIEL_COMMANDER_REAL_TUNNEL_CLIENT": tunnel_client,
+        "LOCALBRIDGE_MCP_STATE_DIR": state_dir,
+        "LOCALBRIDGE_MCP_LOG_DIR": log_dir,
+        "LOCALBRIDGE_MCP_RUNTIME_ROOT": runtime_root,
+        "LOCALBRIDGE_MCP_TUNNEL_CLIENT": tunnel_wrapper,
+        "LOCALBRIDGE_MCP_REAL_TUNNEL_CLIENT": tunnel_client,
         "HEALTH_LISTEN_ADDR": health_addr,
         "HEALTH_URL_FILE": str(Path(state_dir) / "health-url"),
         "LOG_FILE": str(Path(log_dir) / "tunnel-client.jsonl"),

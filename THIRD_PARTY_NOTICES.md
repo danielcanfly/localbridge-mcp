@@ -1,6 +1,6 @@
 # Third-party notices
 
-Daniel Commander includes or adapts selected MIT-licensed execution-core routines from the project listed below. Required notices are retained here and in relevant source headers.
+LocalBridge MCP includes or adapts selected MIT-licensed execution-core routines from the project listed below. Required notices are retained here and in relevant source headers.
 
 ## Desktop Commander MCP
 
@@ -10,7 +10,7 @@ Daniel Commander includes or adapts selected MIT-licensed execution-core routine
 - License: MIT
 - Used for selected local execution-core routines, including terminal session behavior, command policy helpers, process-state detection, fuzzy text matching, ripgrep resolution, and search-session mechanics.
 
-Daniel Commander removes upstream product UI, hosted remote-device behavior, telemetry upload paths, analytics/feedback upload paths, office-document integrations, and unrelated marketing/product assets. Daniel Commander adds its own MCP surface, fail-closed configuration, macOS Runtime.app, launchd service management, Secure MCP Tunnel deployment path, active-only sleep-prevention lifecycle, release preflight, and qualification matrix.
+LocalBridge MCP removes upstream product UI, hosted remote-device behavior, telemetry upload paths, analytics/feedback upload paths, office-document integrations, and unrelated marketing/product assets. LocalBridge MCP adds its own MCP surface, fail-closed configuration, macOS Runtime.app, launchd service management, Secure MCP Tunnel deployment path, active-only sleep-prevention lifecycle, release preflight, and qualification matrix.
 
 ## Upstream MIT license notice
 

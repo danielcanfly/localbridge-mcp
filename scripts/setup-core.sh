@@ -3,7 +3,7 @@ set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
-CONFIG_DIR="${DANIEL_COMMANDER_CONFIG_DIR:-$HOME/.config/daniel-commander}"
+CONFIG_DIR="${LOCALBRIDGE_MCP_CONFIG_DIR:-$HOME/.config/localbridge-mcp}"
 CONFIG_FILE="$CONFIG_DIR/config.json"
 ALLOWED=""
 ALLOW_COUNT=0
@@ -13,7 +13,7 @@ usage() {
 Usage:
   ./scripts/setup-core.sh [--allow PATH]...
 
-Builds Daniel Commander and writes a fail-closed user config.
+Builds LocalBridge MCP and writes a fail-closed user config.
 Repeat --allow for each filesystem root the MCP filesystem tools may access.
 With no --allow values, filesystem access remains disabled.
 
@@ -46,8 +46,8 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-NODE_BIN="${DANIEL_COMMANDER_NODE:-$(command -v node 2>/dev/null || true)}"
-NPM_BIN="${DANIEL_COMMANDER_NPM:-$(command -v npm 2>/dev/null || true)}"
+NODE_BIN="${LOCALBRIDGE_MCP_NODE:-$(command -v node 2>/dev/null || true)}"
+NPM_BIN="${LOCALBRIDGE_MCP_NPM:-$(command -v npm 2>/dev/null || true)}"
 [ -n "$NODE_BIN" ] && [ -x "$NODE_BIN" ] || { echo "node not found" >&2; exit 2; }
 [ -n "$NPM_BIN" ] && [ -x "$NPM_BIN" ] || { echo "npm not found" >&2; exit 2; }
 
@@ -60,12 +60,12 @@ cd "$REPO_ROOT"
 
 mkdir -p "$CONFIG_DIR"
 chmod 700 "$CONFIG_DIR"
-DC_ALLOWED_DIRS="$ALLOWED" "$NODE_BIN" - "$CONFIG_FILE" <<'NODE'
+LB_ALLOWED_DIRS="$ALLOWED" "$NODE_BIN" - "$CONFIG_FILE" <<'NODE'
 const fs = require('node:fs');
 const path = require('node:path');
 
 const target = process.argv[2];
-const allowed = [...new Set((process.env.DC_ALLOWED_DIRS || '').split(/\r?\n/).filter(Boolean))];
+const allowed = [...new Set((process.env.LB_ALLOWED_DIRS || '').split(/\r?\n/).filter(Boolean))];
 
 let current = {};
 if (fs.existsSync(target)) {

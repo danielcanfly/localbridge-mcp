@@ -3,7 +3,7 @@ import { terminalManager } from './terminal-manager.js';
 
 export async function startProcess(command: string, timeoutMs = 1000, shell?: string) {
   if (!(await commandManager.validateCommand(command))) {
-    throw new Error('Command blocked by Daniel Commander policy');
+    throw new Error('Command blocked by LocalBridge MCP policy');
   }
   return terminalManager.executeCommand(command, timeoutMs, shell, true);
 }
@@ -16,7 +16,7 @@ export function readProcessOutput(pid: number, offset = 0, length = 1000) {
 
 export async function interactWithProcess(pid: number, input: string): Promise<boolean> {
   if (!(await commandManager.validateCommand(input))) {
-    throw new Error('Terminal input blocked by Daniel Commander policy');
+    throw new Error('Terminal input blocked by LocalBridge MCP policy');
   }
   return terminalManager.sendInputToProcess(pid, input);
 }

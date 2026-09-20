@@ -1,10 +1,10 @@
 #!/bin/sh
 set -eu
 
-LABEL="${DANIEL_COMMANDER_LAUNCHD_LABEL:-com.danielcanfly.daniel-commander}"
+LABEL="${LOCALBRIDGE_MCP_LAUNCHD_LABEL:-io.localbridge.mcp}"
 DOMAIN="gui/$(id -u)"
-STATE_DIR="${DANIEL_COMMANDER_STATE_DIR:-$HOME/.local/state/daniel-commander}"
-RUNTIME_ROOT="${DANIEL_COMMANDER_RUNTIME_ROOT:-$HOME/.local/share/daniel-commander/runtime}"
+STATE_DIR="${LOCALBRIDGE_MCP_STATE_DIR:-$HOME/.local/state/localbridge-mcp}"
+RUNTIME_ROOT="${LOCALBRIDGE_MCP_RUNTIME_ROOT:-$HOME/.local/share/localbridge-mcp/runtime}"
 URL_FILE="$STATE_DIR/health-url"
 
 if launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1; then

@@ -1,6 +1,6 @@
 # Portability
 
-Daniel Commander separates the portable MCP core from platform-specific service management.
+LocalBridge MCP separates the portable MCP core from platform-specific service management.
 
 ## Portable core
 

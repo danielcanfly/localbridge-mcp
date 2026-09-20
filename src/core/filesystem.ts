@@ -59,7 +59,7 @@ export async function readFile(filePath: string, offset = 0, length?: number): P
   const cfg = await configManager.getConfig();
   const data = await fs.readFile(file);
   if (data.subarray(0, Math.min(data.length, 8192)).includes(0)) {
-    throw new Error('Binary files are not supported by the Daniel text core');
+    throw new Error('Binary files are not supported by the LocalBridge text core');
   }
   const lines = data.toString('utf8').split(/\r?\n/);
   const max = length ?? cfg.fileReadLineLimit;

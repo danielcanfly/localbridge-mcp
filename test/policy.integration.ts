@@ -3,11 +3,11 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-const sandbox = await fs.mkdtemp(path.join(os.tmpdir(), 'daniel-commander-p4-'));
+const sandbox = await fs.mkdtemp(path.join(os.tmpdir(), 'localbridge-mcp-p4-'));
 const configDir = path.join(sandbox, 'config');
 const workspace = path.join(sandbox, 'workspace');
 await fs.mkdir(workspace, { recursive: true });
-process.env.DANIEL_COMMANDER_CONFIG_DIR = configDir;
+process.env.LOCALBRIDGE_MCP_CONFIG_DIR = configDir;
 
 const { configManager } = await import('../src/config-manager.js');
 const core = await import('../src/core/index.js');
@@ -50,7 +50,7 @@ assert(interactive.pid > 0);
 
 await assert.rejects(
   () => core.interactWithProcess(interactive.pid, 'sudo -n true'),
-  /blocked by Daniel Commander policy/i
+  /blocked by LocalBridge MCP policy/i
 );
 
 assert.equal(await core.interactWithProcess(interactive.pid, 'hello-p4'), true);

@@ -3,8 +3,8 @@ set -u
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
-CONFIG_FILE="${DANIEL_COMMANDER_CONFIG_DIR:-$HOME/.config/daniel-commander}/config.json"
-PROFILE="${DANIEL_COMMANDER_PROFILE:-daniel-prod}"
+CONFIG_FILE="${LOCALBRIDGE_MCP_CONFIG_DIR:-$HOME/.config/localbridge-mcp}/config.json"
+PROFILE="${LOCALBRIDGE_MCP_PROFILE:-localbridge-prod}"
 PROFILE_FILE="${TUNNEL_CLIENT_PROFILE_DIR:-$HOME/.config/tunnel-client}/$PROFILE.yaml"
 FAIL=0
 
@@ -51,7 +51,7 @@ fi
 if [ "$(uname -s)" = "Darwin" ]; then
   check_tool swiftc
   check_tool codesign
-  if command -v tunnel-client >/dev/null 2>&1 || [ -n "${DANIEL_COMMANDER_TUNNEL_CLIENT:-}" ]; then
+  if command -v tunnel-client >/dev/null 2>&1 || [ -n "${LOCALBRIDGE_MCP_TUNNEL_CLIENT:-}" ]; then
     echo "TUNNEL_CLIENT=available"
   else
     echo "TUNNEL_CLIENT=missing_optional_for_local_core"

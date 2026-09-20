@@ -1,6 +1,6 @@
 # Original construction-plan reconciliation
 
-Authority: the original frozen Daniel Commander v0.1 construction plan defined the construction matrix by task content. Later implementation sessions reused phase numbers for different milestones. From this document forward, task content is authoritative and phase-number drift must not be used to infer completion.
+Authority: the original frozen LocalBridge MCP v0.1 construction plan defined the construction matrix by task content. Later implementation sessions reused phase numbers for different milestones. From this document forward, task content is authoritative and phase-number drift must not be used to infer completion.
 
 ## Original P0: clean independent repository
 
@@ -26,7 +26,7 @@ Status: PASS with deliberate structural simplification.
 
 The pinned authority remained Desktop Commander MCP v0.2.51 at commit `092ce0b841e86455f12e41f4dc36399a7522ecb5`.
 
-Instead of copying the initially proposed directory layout and full handler graph, a dependency census showed that direct reuse would drag in 66 coupled source files. Daniel Commander retained only the mature terminal/session, command, process-state, fuzzy-search, ripgrep, and search-session behavior and rewrote thin headless filesystem/edit/config/runtime adapters.
+Instead of copying the initially proposed directory layout and full handler graph, a dependency census showed that direct reuse would drag in 66 coupled source files. LocalBridge MCP retained only the mature terminal/session, command, process-state, fuzzy-search, ripgrep, and search-session behavior and rewrote thin headless filesystem/edit/config/runtime adapters.
 
 The resulting structure consolidates execution code under `src/core/` rather than mirroring upstream directories. This is an intentional architecture improvement, not a missing capability.
 
@@ -55,7 +55,7 @@ There are intentionally no dedicated Git, Docker, SSH, systemd, pytest, or npm-t
 
 Status: PASS with one intentional path change.
 
-The original sketch used `~/.daniel-commander/config.json`. The implementation uses `~/.config/daniel-commander/config.json` and supports `DANIEL_COMMANDER_CONFIG_DIR`, which is a deliberate portability/Unix-convention improvement.
+The original sketch used `~/.localbridge-mcp/config.json`. The implementation uses `~/.config/localbridge-mcp/config.json` and supports `LOCALBRIDGE_MCP_CONFIG_DIR`, which is a deliberate portability/Unix-convention improvement.
 
 Fresh configuration is fail-closed with an empty filesystem allowlist. Runtime/user configuration, SSH configuration, tunnel credentials, and secrets stay outside the repository. Telemetry is physically absent rather than controlled by a `telemetry: false` toggle.
 
@@ -103,7 +103,7 @@ Implemented and qualified:
 - signal-based graceful shutdown;
 - stable Runtime.app identity/TCC preservation;
 - active-only `caffeinate -i -w <tunnel-pid>` sleep prevention;
-- no Daniel Commander caffeinate process while the service is stopped;
+- no LocalBridge MCP caffeinate process while the service is stopped;
 - launchd plist reload during updates so runtime environment changes take effect.
 
 Live qualification covered production update, tunnel crash, Runtime.app crash, stop/start, no-sleep assertion ownership, stale-process cleanup, and Runtime.app identity preservation. See `docs/qualification/LIFECYCLE_STATUS.md`.
@@ -123,7 +123,7 @@ Final adjudicated rows:
 - explicit remote reconnect evidence under the final production build: PASS;
 - incorporation of the now-PASS lifecycle qualification sleep-prevention and lifecycle-shutdown evidence into the final matrix: PASS.
 
-This closes the original construction construction matrix matrix for Daniel Commander v0.1 source qualification. A final `v0.1.0` release tag remains a separate release-management decision.
+This closes the original construction construction matrix matrix for LocalBridge MCP v0.1 source qualification. A final `v0.1.0` release tag remains a separate release-management decision.
 
 ## Frozen next-step rule
 
@@ -133,5 +133,5 @@ After the Public Visibility Gate, the original authority resumes at the remainin
 
 1. lifecycle qualification is now closed/PASS;
 2. final qualification is now closed/PASS;
-3. `DANIEL_COMMANDER_V0_1_PASS` may be considered after final source, CI, and live-runtime evidence are attached to the P9 commit;
+3. `LOCALBRIDGE_MCP_V0_1_PASS` may be considered after final source, CI, and live-runtime evidence are attached to the P9 commit;
 4. retire legacy Oracle MCP infrastructure only after the full replacement remains live-qualified and rollback evidence is no longer needed.

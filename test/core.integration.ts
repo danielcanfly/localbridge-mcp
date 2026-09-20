@@ -3,11 +3,11 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-const sandbox = await fs.mkdtemp(path.join(os.tmpdir(), 'daniel-commander-p2-'));
+const sandbox = await fs.mkdtemp(path.join(os.tmpdir(), 'localbridge-mcp-p2-'));
 const configDir = path.join(sandbox, 'config');
 const workspace = path.join(sandbox, 'workspace');
 await fs.mkdir(workspace, { recursive: true });
-process.env.DANIEL_COMMANDER_CONFIG_DIR = configDir;
+process.env.LOCALBRIDGE_MCP_CONFIG_DIR = configDir;
 
 const { configManager } = await import('../src/config-manager.js');
 const core = await import('../src/core/index.js');

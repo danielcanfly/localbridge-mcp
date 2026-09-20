@@ -11,7 +11,7 @@ Pinned upstream authority:
 
 A direct import of the initially interesting Desktop Commander runtime files expanded to 66 source files because the upstream runtime couples filesystem/edit/search/server code to UI previews, PDF/DOCX/Excel support, telemetry, onboarding, usage tracking, and remote-product code.
 
-Daniel Commander intentionally did not import that dependency closure.
+LocalBridge MCP intentionally did not import that dependency closure.
 
 ## Imported or closely derived
 

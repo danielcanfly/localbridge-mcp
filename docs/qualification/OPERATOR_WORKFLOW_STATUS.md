@@ -4,19 +4,19 @@ Status: PASS on 2026-09-20.
 
 ## Scope
 
-P4 moved Daniel Commander from isolated fixtures to a production-shaped owner workflow while keeping the remote machine unchanged.
+P4 moved LocalBridge MCP from isolated fixtures to a production-shaped owner workflow while keeping the remote machine unchanged.
 
 Qualified path:
 
     ChatGPT
-      -> private Daniel Commander development app
+      -> private LocalBridge MCP development app
       -> OpenAI Secure MCP Tunnel
-      -> Daniel Commander on the owner's Mac
+      -> LocalBridge MCP on the owner's Mac
       -> local repositories and processes
       -> pre-existing SSH configuration
       -> remote Linux host
 
-No Daniel Commander service, Node runtime, MCP server, agent, or other package was installed on the remote host.
+No LocalBridge MCP service, Node runtime, MCP server, agent, or other package was installed on the remote host.
 
 ## Policy hardening
 
@@ -65,7 +65,7 @@ No production repository was modified for this qualification.
 
 ### Project tests
 
-ChatGPT instructed Daniel Commander to run the project's complete `npm test` command.
+ChatGPT instructed LocalBridge MCP to run the project's complete `npm test` command.
 
 The first live run exposed a deterministic-test weakness: a P2 terminal interaction test waited a fixed 200 ms before checking echoed stdin. Under the real tunnel/Work load that interval was occasionally too short.
 
@@ -86,7 +86,7 @@ Using that same process, ChatGPT:
 
 This proves session persistence across separate MCP requests.
 
-The current SSH implementation is pipe-based. The SSH client can warn that a pseudo-terminal was not allocated when Daniel Commander itself is running over stdio. Shell-command interaction is qualified; full terminal-emulator or PTY semantics are not claimed.
+The current SSH implementation is pipe-based. The SSH client can warn that a pseudo-terminal was not allocated when LocalBridge MCP itself is running over stdio. Shell-command interaction is qualified; full terminal-emulator or PTY semantics are not claimed.
 
 ### Remote logs
 
@@ -114,7 +114,7 @@ The full test command reruns P2, P3, and P4.
 
 ## Phase boundary
 
-P4 proves the owner can use ChatGPT to operate real local repositories and an existing remote Linux host through Daniel Commander.
+P4 proves the owner can use ChatGPT to operate real local repositories and an existing remote Linux host through LocalBridge MCP.
 
 P4 does not yet provide:
 
@@ -123,6 +123,6 @@ P4 does not yet provide:
 - OS-level sandboxing;
 - recursive security inspection of arbitrary nested shell/interpreter/SSH command strings;
 - multi-user hosting;
-- a public shared Daniel Commander service.
+- a public shared LocalBridge MCP service.
 
 Those are outside the P4 acceptance contract.

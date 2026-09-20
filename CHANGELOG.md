@@ -1,6 +1,6 @@
 # Changelog
 
-All notable Daniel Commander source releases are documented here.
+All notable LocalBridge MCP source releases are documented here.
 
 ## [0.2.0] - 2026-09-20
 
@@ -8,7 +8,7 @@ Product-polished source release after final qualification closure.
 
 ### Changed
 
-- Replaced the generic MCP tool surface with Daniel-specific `dc_*` tool names.
+- Replaced the generic MCP tool surface with LocalBridge-specific `lb_*` tool names.
 - Renamed tool arguments to product-owned names, including `file_path`, `line_count`, `search_root`, `query_text`, `process_id`, and `stdin_text`.
 - Renamed test scripts from phase-number labels to product-level names.
 - Moved construction and qualification evidence into `docs/qualification/`.
@@ -39,7 +39,7 @@ Second public-release candidate.
 
 ### Known boundaries
 
-- Final qualification row-by-row qualification remains open before any final `DANIEL_COMMANDER_V0_1_PASS` declaration.
+- Final qualification row-by-row qualification remains open before any final `LOCALBRIDGE_MCP_V0_1_PASS` declaration.
 
 ## [0.1.0-rc.1] - 2026-09-20
 

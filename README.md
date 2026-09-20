@@ -1,6 +1,6 @@
-# Daniel Commander
+# LocalBridge MCP
 
-Daniel Commander is a self-hosted MCP computer-control server for local files, text editing, search, persistent shell sessions, Git workflows, and SSH-driven operations.
+LocalBridge MCP is a self-hosted MCP computer-control server for local files, text editing, search, persistent shell sessions, Git workflows, and SSH-driven operations.
 
 It does **not** provide a hosted relay. Each user runs their own MCP server and owns their machine, credentials, tunnel, filesystem allowlist, and remote hosts.
 
@@ -8,12 +8,12 @@ Current source version: **v0.2.0**. The portable stdio core is qualified on macO
 
 ## What it exposes
 
-Daniel Commander provides 17 MCP tools with a Daniel-specific `dc_*` surface:
+LocalBridge MCP provides 17 MCP tools with a LocalBridge-specific `lb_*` surface:
 
-- `dc_read_text`, `dc_read_many_texts`, `dc_list_entries`, `dc_stat_path`
-- `dc_write_text`, `dc_make_directory`, `dc_move_path`, `dc_patch_text_block`
-- `dc_search_start`, `dc_search_read`, `dc_search_cancel`, `dc_search_sessions`
-- `dc_run_shell`, `dc_shell_output`, `dc_shell_input`, `dc_shell_sessions`, `dc_shell_kill`
+- `lb_read_text`, `lb_read_many_texts`, `lb_list_entries`, `lb_stat_path`
+- `lb_write_text`, `lb_make_directory`, `lb_move_path`, `lb_patch_text_block`
+- `lb_search_start`, `lb_search_read`, `lb_search_cancel`, `lb_search_sessions`
+- `lb_run_shell`, `lb_shell_output`, `lb_shell_input`, `lb_shell_sessions`, `lb_shell_kill`
 
 Git, Docker, SSH, systemd, test runners, and similar workflows use the general shell surface instead of product-specific wrappers.
 
@@ -56,10 +56,10 @@ The macOS production path is:
       -> your MCP app
       -> your OpenAI Secure MCP Tunnel
       -> launchd
-      -> Daniel Commander Runtime.app
+      -> LocalBridge MCP Runtime.app
       -> tunnel-client
       -> Node
-      -> Daniel Commander MCP
+      -> LocalBridge MCP
 
 Requirements in addition to the core:
 
@@ -71,16 +71,16 @@ Requirements in addition to the core:
 
 Example:
 
-    mkdir -p "$HOME/.config/daniel-commander"
-    chmod 700 "$HOME/.config/daniel-commander"
-    chmod 600 "$HOME/.config/daniel-commander/tunnel-runtime-key"
+    mkdir -p "$HOME/.config/localbridge-mcp"
+    chmod 700 "$HOME/.config/localbridge-mcp"
+    chmod 600 "$HOME/.config/localbridge-mcp/tunnel-runtime-key"
 
     ./scripts/setup-macos.sh \
       --allow "$HOME/Projects" \
       --tunnel-id YOUR_TUNNEL_ID \
-      --api-key-ref "file:$HOME/.config/daniel-commander/tunnel-runtime-key"
+      --api-key-ref "file:$HOME/.config/localbridge-mcp/tunnel-runtime-key"
 
-Daniel Commander never ships a shared tunnel ID, API key, SSH key, or hosted relay.
+LocalBridge MCP never ships a shared tunnel ID, API key, SSH key, or hosted relay.
 
 See [docs/INSTALL_MACOS.md](docs/INSTALL_MACOS.md) for the full installation and update flow.
 
@@ -95,7 +95,7 @@ See [docs/INSTALL_MACOS.md](docs/INSTALL_MACOS.md) for the full installation and
 
 Normal updates replace the deployed JavaScript bundle without rebuilding the Runtime.app, preserving its macOS privacy authorization. The update path reloads the LaunchAgent when its runtime environment changes.
 
-Daniel Commander holds active-only macOS sleep prevention while the production tunnel is alive: `caffeinate -i -w <tunnel-pid>`. It releases that assertion when the service stops or the tunnel exits. It does not request display wake or override lid-close sleep.
+LocalBridge MCP holds active-only macOS sleep prevention while the production tunnel is alive: `caffeinate -i -w <tunnel-pid>`. It releases that assertion when the service stops or the tunnel exits. It does not request display wake or override lid-close sleep.
 
 ## Configuration
 
@@ -109,11 +109,11 @@ See [config.example.json](config.example.json).
 
 User-specific paths, tunnel identifiers, credentials, SSH aliases/keys, and runtime secrets belong in external configuration, never in the repository.
 
-`fileWriteLineLimit` is an advisory chunking threshold for `dc_write_text`. It produces a warning for large writes; it is not a security boundary or hard size cap.
+`fileWriteLineLimit` is an advisory chunking threshold for `lb_write_text`. It produces a warning for large writes; it is not a security boundary or hard size cap.
 
 ## Security model
 
-Daniel Commander is intentionally powerful.
+LocalBridge MCP is intentionally powerful.
 
 Filesystem allowlists and command blocklists are guardrails, not a security sandbox. Shell commands execute with the permissions of the operating-system user. Shells, interpreters, scripts, and remote SSH commands can reach resources outside the filesystem-tool allowlist if the OS user can reach them.
 
@@ -127,7 +127,7 @@ Product qualification evidence lives under [docs/qualification](docs/qualificati
 
 ## License and notices
 
-Daniel Commander is MIT licensed. Third-party license and provenance notices are preserved in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+LocalBridge MCP is MIT licensed. Third-party license and provenance notices are preserved in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Development
 

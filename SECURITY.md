@@ -1,18 +1,18 @@
 # Security
 
-Daniel Commander gives an MCP client access to real filesystem and terminal capabilities. Treat installation as granting a powerful local operator access to the operating-system account that runs it.
+LocalBridge MCP gives an MCP client access to real filesystem and terminal capabilities. Treat installation as granting a powerful local operator access to the operating-system account that runs it.
 
 ## Security boundaries
 
-The filesystem allowlist limits Daniel Commander's filesystem tools. It does not sandbox arbitrary terminal commands.
+The filesystem allowlist limits LocalBridge MCP's filesystem tools. It does not sandbox arbitrary terminal commands.
 
 The command blocklist is a guardrail. It is not a complete shell security policy. Commands can be nested inside shells, interpreters, scripts, SSH commands, build tools, and other executables.
 
-For a stronger boundary, run Daniel Commander as a dedicated OS user, in a container, or in a VM with only the files and network access you intend to expose.
+For a stronger boundary, run LocalBridge MCP as a dedicated OS user, in a container, or in a VM with only the files and network access you intend to expose.
 
 ## Remote access
 
-Daniel Commander does not provide a hosted relay or shared credentials.
+LocalBridge MCP does not provide a hosted relay or shared credentials.
 
 If you connect it to a remote MCP transport:
 

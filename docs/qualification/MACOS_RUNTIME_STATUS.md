@@ -4,21 +4,21 @@ Status: PASS on 2026-09-20.
 
 ## Production path
 
-P5 turns Daniel Commander into a persistent single-owner macOS runtime:
+P5 turns LocalBridge MCP into a persistent single-owner macOS runtime:
 
     launchd
-      -> Daniel Commander Runtime.app
+      -> LocalBridge MCP Runtime.app
       -> tunnel-client
       -> Homebrew Node
-      -> deployed Daniel Commander MCP bundle
+      -> deployed LocalBridge MCP bundle
 
-No Daniel Commander daemon is installed on the remote SSH host.
+No LocalBridge MCP daemon is installed on the remote SSH host.
 
 ## macOS TCC design
 
 A plain LaunchAgent was tested first and macOS denied access to protected Documents paths with Operation not permitted. P5 therefore uses a small headless app identity at:
 
-    $HOME/Applications/Daniel Commander Runtime.app
+    $HOME/Applications/LocalBridge MCP Runtime.app
 
 The app declares Documents/Desktop usage and preflights configured allowed directories. A dedicated probe proved the authorized app can read an allowed Documents path both normally and when launched by launchd.
 
@@ -28,7 +28,7 @@ Normal updates do not rebuild Runtime.app. They replace only the deployed JS bun
 
 The development checkout is not executed directly by launchd. P5 deploys a pruned bundle to:
 
-    $HOME/.local/share/daniel-commander/runtime
+    $HOME/.local/share/localbridge-mcp/runtime
 
 The bundle contains compiled dist, package metadata, production Node dependencies, and a source-commit marker. Pruning reduced node_modules from roughly 64 MB to roughly 20 MB on the qualification Mac.
 
@@ -52,7 +52,7 @@ The tunnel process was killed with SIGKILL. Runtime.app stayed alive, started a 
 
 The first implementation exposed a real bug: killing Runtime.app could leave tunnel-client orphaned under PID 1 while launchd started a new supervisor, causing duplicate tunnels and a health-port collision.
 
-The repaired Runtime.app startup verifies any stale tunnel PID belongs to tunnel-client with the configured Daniel Commander profile and exact PID file before terminating it. Mismatched PIDs are refused. Verified stale state is cleaned before exactly one replacement tunnel starts.
+The repaired Runtime.app startup verifies any stale tunnel PID belongs to tunnel-client with the configured LocalBridge MCP profile and exact PID file before terminating it. Mismatched PIDs are refused. Verified stale state is cleaned before exactly one replacement tunnel starts.
 
 The repaired qualification passed with the old orphan gone, exactly one tunnel, TCC preflight ok, health ok, and readiness ok. One measured full app recovery completed in about 2 seconds.
 
@@ -77,17 +77,17 @@ Qualification confirmed the app code requirement remained unchanged across updat
 The exact deployed production bundle was tested with the official MCP client and Homebrew Node:
 
     start_process -> P5_BUNDLE_ECHO_OK
-    read_file     -> # Daniel Commander
+    read_file     -> # LocalBridge MCP
 
 A fresh ChatGPT Work call then traversed the production auto-start tunnel. Debug tracing proved the full protocol path:
 
 1. command polled from the OpenAI control plane;
-2. command forwarded to Daniel Commander;
+2. command forwarded to LocalBridge MCP;
 3. MCP response received with has_error=false;
 4. response posted back to the control plane;
 5. final response accepted with HTTP 200.
 
-During browser automation, Work sometimes rendered only the opening brace even after the complete response had been accepted by the control plane. The deployed MCP bundle, tunnel response path, and HTTP 200 delivery were independently proven, so this is recorded as a presentation/streaming anomaly rather than a Daniel Commander runtime failure.
+During browser automation, Work sometimes rendered only the opening brace even after the complete response had been accepted by the control plane. The deployed MCP bundle, tunnel response path, and HTTP 200 delivery were independently proven, so this is recorded as a presentation/streaming anomaly rather than a LocalBridge MCP runtime failure.
 
 P5 does not bypass platform safety checks. A fresh browser-automated SSH prompt was blocked before submission, so the P4 read-only SSH qualification remains the authority for the unchanged remote-host terminal capability.
 
@@ -95,11 +95,11 @@ P5 does not bypass platform safety checks. A fresh browser-automated SSH prompt 
 
 Runtime state lives under:
 
-    $HOME/.local/state/daniel-commander
+    $HOME/.local/state/localbridge-mcp
 
 Runtime logs live under:
 
-    $HOME/Library/Logs/DanielCommander
+    $HOME/Library/Logs/LocalBridgeMCP
 
 Runtime-managed state/log files are private, and tunnel/config secrets remain outside the repository. No tunnel IDs, app IDs, API keys, SSH keys, account identifiers, or machine-specific usernames belong in source control.
 

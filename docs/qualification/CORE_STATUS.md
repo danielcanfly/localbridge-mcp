@@ -14,7 +14,7 @@ Pinned upstream:
 
 The initial dependency census showed that importing the obvious upstream runtime files directly would expand to 66 source files. The expansion came from PDF, Office-document, UI-preview, telemetry, onboarding, usage-tracking, and product-server dependencies.
 
-Daniel Commander instead retained the mature terminal/session, command parsing, process-state, fuzzy-search, ripgrep-resolution, and search-session behavior behind a rewritten headless adapter layer.
+LocalBridge MCP instead retained the mature terminal/session, command parsing, process-state, fuzzy-search, ripgrep-resolution, and search-session behavior behind a rewritten headless adapter layer.
 
 ## Acceptance
 
@@ -63,6 +63,6 @@ Runtime dependencies are intentionally small:
 
 ## Phase boundary
 
-P2 does not register MCP tools and does not connect the production Daniel Commander core to the Secure MCP Tunnel.
+P2 does not register MCP tools and does not connect the production LocalBridge MCP core to the Secure MCP Tunnel.
 
 The next phase can build the minimal MCP registration layer over this qualified headless core.

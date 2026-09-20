@@ -110,7 +110,7 @@ for(const name of Object.keys(pkg.dependencies||{})) walk(name);
 console.log('RELEASE_DEPENDENCY_LICENSE_PASS');
 NODE
 
-TMP=$(mktemp -d "${TMPDIR:-/tmp}/daniel-commander-release.XXXXXX")
+TMP=$(mktemp -d "${TMPDIR:-/tmp}/localbridge-mcp-release.XXXXXX")
 trap 'rm -rf "$TMP"' EXIT HUP INT TERM
 mkdir -p "$TMP/repo" "$TMP/home"
 
@@ -123,8 +123,8 @@ git archive --format=tar HEAD | tar -xf - -C "$TMP/repo"
   HOME="$TMP/home" npm audit
 )
 
-ARCHIVE="$TMP/daniel-commander-v$VERSION-source.tar.gz"
-git archive --format=tar.gz --prefix="daniel-commander-v$VERSION/" -o "$ARCHIVE" HEAD
+ARCHIVE="$TMP/localbridge-mcp-v$VERSION-source.tar.gz"
+git archive --format=tar.gz --prefix="localbridge-mcp-v$VERSION/" -o "$ARCHIVE" HEAD
 SHA256=$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')
 
 echo "RELEASE_SOURCE_ARCHIVE_SHA256=$SHA256"

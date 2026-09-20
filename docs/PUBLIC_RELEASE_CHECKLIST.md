@@ -1,6 +1,6 @@
 # Public release checklist
 
-Use this before publishing a Daniel Commander source release.
+Use this before publishing a LocalBridge MCP source release.
 
 ## Source and history
 
@@ -16,12 +16,12 @@ Use this before publishing a Daniel Commander source release.
 
 ## Product boundaries
 
-- [ ] README states that Daniel Commander does not provide a hosted relay.
+- [ ] README states that LocalBridge MCP does not provide a hosted relay.
 - [ ] README distinguishes the portable core from macOS-only production service management.
 - [ ] SECURITY.md explains that allowlists/blocklists are guardrails, not a sandbox.
 - [ ] Example config is fail-closed.
 - [ ] No personal paths, app IDs, tunnel IDs, keys, or SSH identities are in distributable templates.
-- [ ] Public docs present Daniel Commander as a product, not as a construction handoff.
+- [ ] Public docs present LocalBridge MCP as a product, not as a construction handoff.
 
 ## Installation
 

@@ -26,10 +26,10 @@ The portable core requires Node.js 20 or newer and does not require OpenAI Secur
 The persistent remote path remains macOS-specific:
 
     launchd
-      -> Daniel Commander Runtime.app
+      -> LocalBridge MCP Runtime.app
       -> user-owned tunnel-client
       -> user-owned Secure MCP Tunnel
-      -> deployed Daniel Commander stdio MCP
+      -> deployed LocalBridge MCP stdio MCP
 
 Linux production service management is not claimed until a native systemd lane is separately implemented and qualified.
 
@@ -54,7 +54,7 @@ The macOS service no longer hardcodes one developer's Homebrew path.
 A clean-room source copy was created with:
 
 - a fresh temporary HOME;
-- no pre-existing Daniel Commander config;
+- no pre-existing LocalBridge MCP config;
 - no node_modules;
 - a new workspace.
 

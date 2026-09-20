@@ -1,12 +1,12 @@
 #!/bin/sh
 set -eu
 
-REAL_TUNNEL_CLIENT="${DANIEL_COMMANDER_REAL_TUNNEL_CLIENT:-}"
-STATE_DIR="${DANIEL_COMMANDER_STATE_DIR:-$HOME/.local/state/daniel-commander}"
+REAL_TUNNEL_CLIENT="${LOCALBRIDGE_MCP_REAL_TUNNEL_CLIENT:-}"
+STATE_DIR="${LOCALBRIDGE_MCP_STATE_DIR:-$HOME/.local/state/localbridge-mcp}"
 CAFFEINATE_PID_FILE="$STATE_DIR/caffeinate.pid"
 
 [ -n "$REAL_TUNNEL_CLIENT" ] || {
-  echo "DANIEL_COMMANDER_REAL_TUNNEL_CLIENT is required" >&2
+  echo "LOCALBRIDGE_MCP_REAL_TUNNEL_CLIENT is required" >&2
   exit 2
 }
 [ -x "$REAL_TUNNEL_CLIENT" ] || {

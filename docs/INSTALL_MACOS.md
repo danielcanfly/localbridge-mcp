@@ -10,7 +10,7 @@ Install:
 - Xcode Command Line Tools
 - tunnel-client if you want the OpenAI Secure MCP Tunnel path
 
-Daniel Commander does not install or bundle a shared remote relay.
+LocalBridge MCP does not install or bundle a shared remote relay.
 
 ## 2. Clone and configure the core
 
@@ -30,7 +30,7 @@ Inspect the result:
 
 The core setup prints a stdio command in this form:
 
-    /absolute/path/to/node /absolute/path/to/daniel-commander/dist/src/index.js
+    /absolute/path/to/node /absolute/path/to/localbridge-mcp/dist/src/index.js
 
 Register that command in any MCP client that supports a local stdio server.
 
@@ -42,11 +42,11 @@ For the persistent ChatGPT path you need your own OpenAI Secure MCP Tunnel confi
 
 Store the control-plane credential in a private file rather than in a shell history or plist:
 
-    mkdir -p "$HOME/.config/daniel-commander"
-    chmod 700 "$HOME/.config/daniel-commander"
+    mkdir -p "$HOME/.config/localbridge-mcp"
+    chmod 700 "$HOME/.config/localbridge-mcp"
 
     # Write the credential using the secure workflow provided by your account/tooling.
-    chmod 600 "$HOME/.config/daniel-commander/tunnel-runtime-key"
+    chmod 600 "$HOME/.config/localbridge-mcp/tunnel-runtime-key"
 
 Do not put the credential in this repository.
 
@@ -55,7 +55,7 @@ Do not put the credential in this repository.
     ./scripts/setup-macos.sh \
       --allow "$HOME/Projects" \
       --tunnel-id YOUR_TUNNEL_ID \
-      --api-key-ref "file:$HOME/.config/daniel-commander/tunnel-runtime-key"
+      --api-key-ref "file:$HOME/.config/localbridge-mcp/tunnel-runtime-key"
 
 The script:
 
@@ -66,7 +66,7 @@ The script:
 5. creates the Runtime.app if necessary;
 6. installs and starts a launchd service.
 
-If macOS asks Daniel Commander Runtime for Documents/Desktop access, approve only the folders you intend Daniel Commander to operate on.
+If macOS asks LocalBridge MCP Runtime for Documents/Desktop access, approve only the folders you intend LocalBridge MCP to operate on.
 
 ## 6. Verify
 
@@ -113,10 +113,10 @@ Uninstall does not delete your source checkout, external config, logs, credentia
 
 The macOS scripts prefer explicit overrides and then stable package-manager/system locations. Supported overrides include:
 
-    DANIEL_COMMANDER_NODE
-    DANIEL_COMMANDER_NPM
-    DANIEL_COMMANDER_TUNNEL_CLIENT
-    DANIEL_COMMANDER_SWIFTC
+    LOCALBRIDGE_MCP_NODE
+    LOCALBRIDGE_MCP_NPM
+    LOCALBRIDGE_MCP_TUNNEL_CLIENT
+    LOCALBRIDGE_MCP_SWIFTC
 
 This supports Apple Silicon Homebrew, Intel Homebrew, and other stable absolute paths without baking one developer's machine into the project.
 
@@ -127,7 +127,7 @@ To create and validate your private tunnel profile without installing launchd or
     ./scripts/setup-macos.sh \
       --allow "$HOME/Projects" \
       --tunnel-id YOUR_TUNNEL_ID \
-      --api-key-ref "file:$HOME/.config/daniel-commander/tunnel-runtime-key" \
+      --api-key-ref "file:$HOME/.config/localbridge-mcp/tunnel-runtime-key" \
       --no-service
 
 This is useful for first-time setup and automation. When it passes, rerun without `--no-service` to install the persistent macOS service.

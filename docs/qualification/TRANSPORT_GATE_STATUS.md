@@ -9,8 +9,8 @@ This gate qualified the preferred v0.1 transport before importing any Desktop Co
 - A personal ChatGPT Plus account in the tested rollout can enable Developer Mode.
 - A personal development plugin can connect to a local stdio MCP through OpenAI Secure MCP Tunnel.
 - ChatGPT can discover both read and write MCP tools through that tunnel.
-- ChatGPT executed dc_test_read on the Mac and returned the exact file content.
-- ChatGPT executed dc_test_write on the Mac and created the expected isolated test file.
+- ChatGPT executed lb_test_read on the Mac and returned the exact file content.
+- ChatGPT executed lb_test_write on the Mac and created the expected isolated test file.
 - The write tool remained annotated as destructive.
 - The MCP server itself did not need a public HTTP listener or a public Cloudflare endpoint.
 
@@ -18,12 +18,12 @@ This gate qualified the preferred v0.1 transport before importing any Desktop Co
 
 The qualification server is intentionally limited to:
 
-    /tmp/daniel-commander-gate
+    /tmp/localbridge-mcp-gate
 
 It exposes only:
 
-    dc_test_read
-    dc_test_write
+    lb_test_read
+    lb_test_write
 
 No production repository, SSH target, Oracle service, or existing MCP server was modified by this gate.
 
@@ -31,7 +31,7 @@ No production repository, SSH target, Oracle service, or existing MCP server was
 
 Read:
 
-    DANIEL_COMMANDER_GATE_READ_OK
+    LOCALBRIDGE_MCP_GATE_READ_OK
 
 Write request content:
 
@@ -50,7 +50,7 @@ Plan A is qualified:
         -> OpenAI Secure MCP Tunnel
         -> tunnel-client on the user's machine
         -> stdio MCP
-        -> Daniel Commander
+        -> LocalBridge MCP
 
 Cloudflare + public Streamable HTTP remains a fallback, not the primary v0.1 transport.
 

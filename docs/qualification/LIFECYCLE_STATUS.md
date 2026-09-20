@@ -2,7 +2,7 @@
 
 Status: **PASS**
 
-Authority: original frozen Daniel Commander v0.1 P8 lifecycle requirement, after the Public Visibility Gate.
+Authority: original frozen LocalBridge MCP v0.1 P8 lifecycle requirement, after the Public Visibility Gate.
 
 ## Active-only sleep prevention
 
@@ -28,7 +28,7 @@ The repair does not rebuild the locally installed Runtime.app. During live quali
 
 ```text
 SHA-256 2137a19af08f4d121531ccc7dfb78ee52d6ea5d4ae133947c79e39fd80bac7c7
-Bundle ID com.danielcanfly.daniel-commander.runtime
+Bundle ID io.localbridge.mcp.runtime
 CDHash 1a8ce803e9fe4bd549223af0bca792fc56421e55
 ```
 
@@ -39,13 +39,13 @@ TCC preflight remained `ok` after the production update and every recovery exerc
 Final candidate: `47495e95ca761b17096c42685909c361409eb233`.
 
 - Product update path reloaded the new LaunchAgent environment and returned health/readiness green with exactly one production caffeinate assertion.
-- `pmset -g assertions` showed `PreventUserIdleSystemSleep` owned by the Daniel Commander caffeinate process on behalf of the active tunnel PID.
+- `pmset -g assertions` showed `PreventUserIdleSystemSleep` owned by the LocalBridge MCP caffeinate process on behalf of the active tunnel PID.
 - Killing the production tunnel with `SIGKILL` recovered to a new tunnel and new caffeinate process in 7 seconds; the old caffeinate process did not survive.
 - Killing Runtime.app with `SIGKILL` recovered to a new app, tunnel, and caffeinate process in about 1 second; stale tunnel/caffeinate processes were absent and exactly one wrapper remained.
-- `macos-service.sh stop` removed the tunnel and Daniel Commander caffeinate process and reported `CAFFEINATE_COUNT=0`.
+- `macos-service.sh stop` removed the tunnel and LocalBridge MCP caffeinate process and reported `CAFFEINATE_COUNT=0`.
 - `macos-service.sh start` restored health/readiness and exactly one active caffeinate process in about 1 second.
 - Isolated Darwin regression tests verify the wrapper creates exactly one caffeinate process for a real child PID and cleans it plus its state file on shutdown.
 
 ## Boundary
 
-Lifecycle qualification is closed. Final qualification remains separate and must be qualified row-by-row before `DANIEL_COMMANDER_V0_1_PASS` can be declared.
+Lifecycle qualification is closed. Final qualification remains separate and must be qualified row-by-row before `LOCALBRIDGE_MCP_V0_1_PASS` can be declared.

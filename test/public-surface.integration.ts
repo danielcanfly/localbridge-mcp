@@ -15,8 +15,8 @@ const pkg = JSON.parse(await fs.readFile('package.json', 'utf8'));
 assert.doesNotMatch(service, /\/opt\/homebrew\/bin\/(?:node|npm|tunnel-client)/);
 assert.match(common, /\/opt\/homebrew\/bin/);
 assert.match(common, /\/usr\/local\/bin/);
-assert.match(service, /DANIEL_COMMANDER_NODE/);
-assert.match(service, /DANIEL_COMMANDER_TUNNEL_CLIENT/);
+assert.match(service, /LOCALBRIDGE_MCP_NODE/);
+assert.match(service, /LOCALBRIDGE_MCP_TUNNEL_CLIENT/);
 console.log('PUBLIC_DYNAMIC_TOOL_DISCOVERY_PASS');
 
 assert.match(setupCore, /Node\.js >=20/);

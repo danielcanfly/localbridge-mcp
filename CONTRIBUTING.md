@@ -1,6 +1,6 @@
-# Contributing to Daniel Commander
+# Contributing to LocalBridge MCP
 
-Thanks for helping improve Daniel Commander.
+Thanks for helping improve LocalBridge MCP.
 
 ## Development setup
 
@@ -13,7 +13,7 @@ Run the release gate before proposing release-facing changes:
 
 ## Scope
 
-Daniel Commander is a self-hosted MCP computer-control server. Contributions should preserve:
+LocalBridge MCP is a self-hosted MCP computer-control server. Contributions should preserve:
 
 - fail-closed filesystem access;
 - explicit user-owned credentials and tunnel configuration;

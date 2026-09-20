@@ -36,7 +36,7 @@ Tool annotations distinguish read-only operations from writes, destructive opera
 
 ## Local MCP qualification
 
-The P3 integration test uses the official MCP client and stdio transport to spawn the compiled Daniel Commander server.
+The P3 integration test uses the official MCP client and stdio transport to spawn the compiled LocalBridge MCP server.
 
 Passing markers:
 
@@ -52,11 +52,11 @@ The full test command also reruns the P2 core suite before P3.
 
 ## ChatGPT Secure Tunnel live qualification
 
-A private development app named Daniel Commander Dev was connected to the already-qualified personal Secure MCP Tunnel.
+A private development app named LocalBridge MCP Dev was connected to the already-qualified personal Secure MCP Tunnel.
 
 Live tests were deliberately restricted to:
 
-    /tmp/daniel-commander-p3-live
+    /tmp/localbridge-mcp-p3-live
 
 Read:
 
@@ -87,7 +87,7 @@ This proves the production-shaped MCP server can execute a real terminal command
 
 The parent control environment had inherited a deleted working directory. That state propagated into tunnel-client and then into the MCP process.
 
-Daniel Commander now repairs an invalid startup working directory by switching to the user home directory. Terminal spawns also explicitly use a valid working directory.
+LocalBridge MCP now repairs an invalid startup working directory by switching to the user home directory. Terminal spawns also explicitly use a valid working directory.
 
 ### Short-command wait window
 
@@ -120,7 +120,7 @@ P3 proves the formal 17-tool MCP surface and the ChatGPT Secure Tunnel path.
 
 P3 does not yet:
 
-- broaden allowed directories to Daniel's real repositories
+- broaden allowed directories to the owner's real repositories
 - configure the Oracle SSH workflow
 - create a permanent launchd service
 - create a long-lived production runtime key

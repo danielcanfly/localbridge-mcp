@@ -46,34 +46,34 @@ function safe<TArgs>(fn: (args: TArgs) => Promise<ToolResult> | ToolResult) {
   };
 }
 
-export const DANIEL_COMMANDER_TOOL_NAMES = [
-  'dc_read_text',
-  'dc_read_many_texts',
-  'dc_list_entries',
-  'dc_stat_path',
-  'dc_write_text',
-  'dc_make_directory',
-  'dc_move_path',
-  'dc_patch_text_block',
-  'dc_search_start',
-  'dc_search_read',
-  'dc_search_cancel',
-  'dc_search_sessions',
-  'dc_run_shell',
-  'dc_shell_output',
-  'dc_shell_input',
-  'dc_shell_sessions',
-  'dc_shell_kill'
+export const LOCALBRIDGE_MCP_TOOL_NAMES = [
+  'lb_read_text',
+  'lb_read_many_texts',
+  'lb_list_entries',
+  'lb_stat_path',
+  'lb_write_text',
+  'lb_make_directory',
+  'lb_move_path',
+  'lb_patch_text_block',
+  'lb_search_start',
+  'lb_search_read',
+  'lb_search_cancel',
+  'lb_search_sessions',
+  'lb_run_shell',
+  'lb_shell_output',
+  'lb_shell_input',
+  'lb_shell_sessions',
+  'lb_shell_kill'
 ] as const;
 
-export function createDanielCommanderServer(): McpServer {
+export function createLocalBridgeMCPServer(): McpServer {
   const server = new McpServer({
-    name: 'daniel-commander',
+    name: 'localbridge-mcp',
     version: MCP_SERVER_VERSION
   });
 
   server.registerTool(
-    'dc_read_text',
+    'lb_read_text',
     {
       description: 'Read a UTF-8 text file inside configured allowed directories. Supports line offset and line count.',
       inputSchema: z.object({
@@ -81,13 +81,13 @@ export function createDanielCommanderServer(): McpServer {
         line_offset: z.number().int().default(0),
         line_count: z.number().int().positive().max(10000).optional()
       }),
-      annotations: { title: 'Daniel read text', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'LocalBridge read text', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
     safe(async ({ file_path, line_offset, line_count }) => textResult(await readFile(file_path, line_offset, line_count)))
   );
 
   server.registerTool(
-    'dc_read_many_texts',
+    'lb_read_many_texts',
     {
       description: 'Read multiple UTF-8 text files inside configured allowed directories in one call.',
       inputSchema: z.object({
@@ -95,7 +95,7 @@ export function createDanielCommanderServer(): McpServer {
         line_offset: z.number().int().default(0),
         line_count: z.number().int().positive().max(10000).optional()
       }),
-      annotations: { title: 'Daniel read many texts', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'LocalBridge read many texts', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
     safe(async ({ file_paths, line_offset, line_count }) => {
       const results = await Promise.all(file_paths.map(async filePath => {
@@ -110,27 +110,27 @@ export function createDanielCommanderServer(): McpServer {
   );
 
   server.registerTool(
-    'dc_list_entries',
+    'lb_list_entries',
     {
       description: 'List files and directories inside an allowed directory.',
       inputSchema: z.object({ directory_path: z.string().min(1) }),
-      annotations: { title: 'Daniel list entries', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'LocalBridge list entries', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
     safe(async ({ directory_path }) => jsonResult(await listDirectory(directory_path)))
   );
 
   server.registerTool(
-    'dc_stat_path',
+    'lb_stat_path',
     {
       description: 'Return size, type, canonical path, and modification time for a file or directory.',
       inputSchema: z.object({ target_path: z.string().min(1) }),
-      annotations: { title: 'Daniel stat path', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'LocalBridge stat path', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
     safe(async ({ target_path }) => jsonResult(await getFileInfo(target_path)))
   );
 
   server.registerTool(
-    'dc_write_text',
+    'lb_write_text',
     {
       description: 'Write or append UTF-8 text inside configured allowed directories. Rewrite mode replaces existing content.',
       inputSchema: z.object({
@@ -138,7 +138,7 @@ export function createDanielCommanderServer(): McpServer {
         text: z.string(),
         write_mode: z.enum(['rewrite', 'append']).default('rewrite')
       }),
-      annotations: { title: 'Daniel write text', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
+      annotations: { title: 'LocalBridge write text', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
     },
     safe(async ({ file_path, text, write_mode }) => {
       await writeFile(file_path, text, write_mode);
@@ -152,11 +152,11 @@ export function createDanielCommanderServer(): McpServer {
   );
 
   server.registerTool(
-    'dc_make_directory',
+    'lb_make_directory',
     {
       description: 'Create a directory, including missing parent directories, inside configured allowed directories.',
       inputSchema: z.object({ directory_path: z.string().min(1) }),
-      annotations: { title: 'Daniel make directory', readOnlyHint: false, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'LocalBridge make directory', readOnlyHint: false, destructiveHint: false, openWorldHint: false }
     },
     safe(async ({ directory_path }) => {
       await createDirectory(directory_path);
@@ -165,14 +165,14 @@ export function createDanielCommanderServer(): McpServer {
   );
 
   server.registerTool(
-    'dc_move_path',
+    'lb_move_path',
     {
       description: 'Move or rename a file or directory within configured allowed directories.',
       inputSchema: z.object({
         from_path: z.string().min(1),
         to_path: z.string().min(1)
       }),
-      annotations: { title: 'Daniel move path', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
+      annotations: { title: 'LocalBridge move path', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
     },
     safe(async ({ from_path, to_path }) => {
       await moveFile(from_path, to_path);
@@ -181,7 +181,7 @@ export function createDanielCommanderServer(): McpServer {
   );
 
   server.registerTool(
-    'dc_patch_text_block',
+    'lb_patch_text_block',
     {
       description: 'Replace a text block in a UTF-8 file. Uses exact replacement first and a bounded fuzzy fallback when one replacement is expected.',
       inputSchema: z.object({
@@ -190,7 +190,7 @@ export function createDanielCommanderServer(): McpServer {
         replace_text: z.string(),
         expected_matches: z.number().int().positive().max(100).default(1)
       }),
-      annotations: { title: 'Daniel patch text block', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
+      annotations: { title: 'LocalBridge patch text block', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
     },
     safe(async ({ file_path, find_text, replace_text, expected_matches }) =>
       jsonResult(await editBlock(file_path, find_text, replace_text, expected_matches))
@@ -198,7 +198,7 @@ export function createDanielCommanderServer(): McpServer {
   );
 
   server.registerTool(
-    'dc_search_start',
+    'lb_search_start',
     {
       description: 'Start an asynchronous ripgrep-backed filename or content search inside allowed directories.',
       inputSchema: z.object({
@@ -213,7 +213,7 @@ export function createDanielCommanderServer(): McpServer {
         deadline_ms: z.number().int().positive().max(300000).optional(),
         fixed_string: z.boolean().default(false)
       }),
-      annotations: { title: 'Daniel search start', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'LocalBridge search start', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
     safe(async args => jsonResult(await searchManager.startSearch({
       rootPath: args.search_root,
@@ -230,7 +230,7 @@ export function createDanielCommanderServer(): McpServer {
   );
 
   server.registerTool(
-    'dc_search_read',
+    'lb_search_read',
     {
       description: 'Read a page of results from an existing search session.',
       inputSchema: z.object({
@@ -238,7 +238,7 @@ export function createDanielCommanderServer(): McpServer {
         result_offset: z.number().int().default(0),
         result_count: z.number().int().positive().max(10000).default(100)
       }),
-      annotations: { title: 'Daniel search read', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'LocalBridge search read', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
     safe(async ({ search_id, result_offset, result_count }) =>
       jsonResult(searchManager.readSearchResults(search_id, result_offset, result_count))
@@ -246,27 +246,27 @@ export function createDanielCommanderServer(): McpServer {
   );
 
   server.registerTool(
-    'dc_search_cancel',
+    'lb_search_cancel',
     {
       description: 'Cancel an active search session.',
       inputSchema: z.object({ search_id: z.string().min(1) }),
-      annotations: { title: 'Daniel search cancel', readOnlyHint: false, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'LocalBridge search cancel', readOnlyHint: false, destructiveHint: false, openWorldHint: false }
     },
     safe(async ({ search_id }) => jsonResult({ stopped: searchManager.stopSearch(search_id) }))
   );
 
   server.registerTool(
-    'dc_search_sessions',
+    'lb_search_sessions',
     {
       description: 'List search sessions and their status.',
       inputSchema: z.object({}),
-      annotations: { title: 'Daniel search sessions', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'LocalBridge search sessions', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
     safe(async () => jsonResult(searchManager.listSearches()))
   );
 
   server.registerTool(
-    'dc_run_shell',
+    'lb_run_shell',
     {
       description: 'Start a shell command in a persistent local terminal session. The session can later receive stdin and expose paginated output. Commands are checked against the configured blocklist.',
       inputSchema: z.object({
@@ -274,7 +274,7 @@ export function createDanielCommanderServer(): McpServer {
         wait_ms: z.number().int().positive().max(300000).default(3000),
         shell_path: z.string().min(1).optional()
       }),
-      annotations: { title: 'Daniel run shell', readOnlyHint: false, destructiveHint: true, openWorldHint: true }
+      annotations: { title: 'LocalBridge run shell', readOnlyHint: false, destructiveHint: true, openWorldHint: true }
     },
     safe(async ({ command_line, wait_ms, shell_path }) =>
       jsonResult(await startProcess(command_line, wait_ms, shell_path))
@@ -282,7 +282,7 @@ export function createDanielCommanderServer(): McpServer {
   );
 
   server.registerTool(
-    'dc_shell_output',
+    'lb_shell_output',
     {
       description: 'Read paginated stdout/stderr captured for an active or recently completed terminal session.',
       inputSchema: z.object({
@@ -290,20 +290,20 @@ export function createDanielCommanderServer(): McpServer {
         line_offset: z.number().int().default(0),
         line_count: z.number().int().positive().max(10000).default(1000)
       }),
-      annotations: { title: 'Daniel shell output', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'LocalBridge shell output', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
     safe(async ({ process_id, line_offset, line_count }) => jsonResult(readProcessOutput(process_id, line_offset, line_count)))
   );
 
   server.registerTool(
-    'dc_shell_input',
+    'lb_shell_input',
     {
       description: 'Send a line of stdin to an active persistent terminal session.',
       inputSchema: z.object({
         process_id: z.number().int().positive(),
         stdin_text: z.string()
       }),
-      annotations: { title: 'Daniel shell input', readOnlyHint: false, destructiveHint: true, openWorldHint: true }
+      annotations: { title: 'LocalBridge shell input', readOnlyHint: false, destructiveHint: true, openWorldHint: true }
     },
     safe(async ({ process_id, stdin_text }) => {
       if (!(await interactWithProcess(process_id, stdin_text))) throw new Error(`Process ${process_id} not found or stdin unavailable`);
@@ -312,21 +312,21 @@ export function createDanielCommanderServer(): McpServer {
   );
 
   server.registerTool(
-    'dc_shell_sessions',
+    'lb_shell_sessions',
     {
       description: 'List active and recently completed persistent terminal sessions.',
       inputSchema: z.object({}),
-      annotations: { title: 'Daniel shell sessions', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
+      annotations: { title: 'LocalBridge shell sessions', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
     safe(async () => jsonResult(listSessions()))
   );
 
   server.registerTool(
-    'dc_shell_kill',
+    'lb_shell_kill',
     {
       description: 'Terminate an active terminal session by PID, escalating from SIGINT to SIGKILL if necessary.',
       inputSchema: z.object({ process_id: z.number().int().positive() }),
-      annotations: { title: 'Daniel shell kill', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
+      annotations: { title: 'LocalBridge shell kill', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
     },
     safe(async ({ process_id }) => {
       if (!forceTerminate(process_id)) throw new Error(`Process ${process_id} not found`);

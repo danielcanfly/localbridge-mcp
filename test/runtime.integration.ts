@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 const files = {
-  app: await fs.readFile('runtime-app/DanielCommanderRuntime.swift', 'utf8'),
+  app: await fs.readFile('runtime-app/LocalBridgeMCPRuntime.swift', 'utf8'),
   status: await fs.readFile('scripts/macos-runtime-status.sh', 'utf8'),
   service: await fs.readFile('scripts/macos-service.sh', 'utf8'),
   wrapper: await fs.readFile('scripts/macos-tunnel-wrapper.sh', 'utf8'),
@@ -46,15 +46,15 @@ assert.match(files.app, /var tccPreflightPassed = false/);
 console.log('RUNTIME_ORPHAN_CLEANUP_CONTRACT_PASS');
 console.log('RUNTIME_LOG_ROTATION_CONTRACT_PASS');
 
-assert.match(files.service, /\.local\/share\/daniel-commander\/runtime/);
+assert.match(files.service, /\.local\/share\/localbridge-mcp\/runtime/);
 assert.match(files.service, /prune --omit=dev/);
-assert.match(files.service, /Daniel Commander Runtime\.app/);
+assert.match(files.service, /LocalBridge MCP Runtime\.app/);
 assert.match(files.service, /doctor --profile .*--health\.listen-addr 127\.0\.0\.1:0/);
 assert.match(files.service, /"RunAtLoad": True/);
 assert.match(files.service, /"KeepAlive": \{"SuccessfulExit": False\}/);
 assert.match(files.service, /"ThrottleInterval": 10/);
 assert.match(files.service, /macos-tunnel-wrapper\.sh/);
-assert.match(files.service, /DANIEL_COMMANDER_REAL_TUNNEL_CLIENT/);
+assert.match(files.service, /LOCALBRIDGE_MCP_REAL_TUNNEL_CLIENT/);
 assert.match(files.service, /tunnel-client-supervised/);
 assert.match(files.service, /bootstrap_service_with_retry/);
 assert.match(files.service, /reload_service_from_plist/);
