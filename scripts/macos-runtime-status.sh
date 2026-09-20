@@ -33,11 +33,35 @@ if [ -s "$STATE_DIR/tunnel-client.pid" ]; then
   pid=$(cat "$STATE_DIR/tunnel-client.pid" 2>/dev/null || true)
   if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
     echo "TUNNEL_PID=$pid"
+    if [ -s "$STATE_DIR/caffeinate.pid" ]; then
+      caffeinate_pid=$(cat "$STATE_DIR/caffeinate.pid" 2>/dev/null || true)
+      caffeinate_command=""
+      if [ -n "$caffeinate_pid" ] && kill -0 "$caffeinate_pid" 2>/dev/null; then
+        caffeinate_command=$(/bin/ps -p "$caffeinate_pid" -o command= 2>/dev/null || true)
+      fi
+      case "$caffeinate_command" in
+        *"caffeinate -i -w $pid"*)
+          echo "CAFFEINATE_COUNT=1"
+          echo "CAFFEINATE_PID=$caffeinate_pid"
+          ;;
+        *)
+          echo "CAFFEINATE_COUNT=0"
+          echo "CAFFEINATE_PID=stale"
+          ;;
+      esac
+    else
+      echo "CAFFEINATE_COUNT=0"
+      echo "CAFFEINATE_PID=missing"
+    fi
   else
     echo "TUNNEL_PID=stale"
+    echo "CAFFEINATE_COUNT=0"
+    echo "CAFFEINATE_PID=missing"
   fi
 else
   echo "TUNNEL_PID=missing"
+  echo "CAFFEINATE_COUNT=0"
+  echo "CAFFEINATE_PID=missing"
 fi
 
 if [ -s "$URL_FILE" ]; then

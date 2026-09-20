@@ -7,6 +7,7 @@ const files = {
   app: await fs.readFile('runtime-app/DanielCommanderRuntime.swift', 'utf8'),
   status: await fs.readFile('scripts/macos-runtime-status.sh', 'utf8'),
   service: await fs.readFile('scripts/macos-service.sh', 'utf8'),
+  wrapper: await fs.readFile('scripts/macos-tunnel-wrapper.sh', 'utf8'),
   runner: await fs.readFile('scripts/test-p5.mjs', 'utf8')
 };
 
@@ -52,7 +53,21 @@ assert.match(files.service, /doctor --profile .*--health\.listen-addr 127\.0\.0\
 assert.match(files.service, /"RunAtLoad": True/);
 assert.match(files.service, /"KeepAlive": \{"SuccessfulExit": False\}/);
 assert.match(files.service, /"ThrottleInterval": 10/);
+assert.match(files.service, /macos-tunnel-wrapper\.sh/);
+assert.match(files.service, /DANIEL_COMMANDER_REAL_TUNNEL_CLIENT/);
+assert.match(files.service, /tunnel-client-supervised/);
+assert.match(files.service, /bootstrap_service_with_retry/);
+assert.match(files.service, /reload_service_from_plist/);
+assert.match(files.service, /launchctl bootout \"\$DOMAIN\/\$LABEL\"/);
+assert.match(files.service, /launchctl bootstrap \"\$DOMAIN\" \"\$PLIST\"/);
 assert.doesNotMatch(files.service, /"WorkingDirectory": repo_root/);
+assert.match(files.wrapper, /\/usr\/bin\/caffeinate -i -w "\$tunnel_pid"/);
+assert.match(files.wrapper, /"\$REAL_TUNNEL_CLIENT" "\$@" &/);
+assert.match(files.wrapper, /CAFFEINATE_PID_FILE/);
+assert.match(files.wrapper, /trap forward_stop TERM INT/);
+assert.match(files.status, /CAFFEINATE_COUNT=/);
+assert.match(files.status, /CAFFEINATE_PID=/);
+console.log('P5_ACTIVE_ONLY_CAFFEINATE_CONTRACT_PASS');
 console.log('P5_LIVE_DOCTOR_OVERRIDE_PASS');
 console.log('P5_DEPLOY_BUNDLE_CONTRACT_PASS');
 console.log('P5_LAUNCHD_APP_CONTRACT_PASS');

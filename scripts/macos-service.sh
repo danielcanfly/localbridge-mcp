@@ -18,6 +18,8 @@ RUNTIME_ROOT="${DANIEL_COMMANDER_RUNTIME_ROOT:-$HOME/.local/share/daniel-command
 APP="${DANIEL_COMMANDER_RUNTIME_APP:-$HOME/Applications/Daniel Commander Runtime.app}"
 APP_EXE="$APP/Contents/MacOS/DanielCommanderRuntime"
 APP_SOURCE="$REPO_ROOT/runtime-app/DanielCommanderRuntime.swift"
+TUNNEL_WRAPPER_SOURCE="$REPO_ROOT/scripts/macos-tunnel-wrapper.sh"
+TUNNEL_WRAPPER="$RUNTIME_ROOT/bin/tunnel-client-supervised"
 
 # shellcheck source=macos-common.sh
 . "$SCRIPT_DIR/macos-common.sh"
@@ -58,6 +60,9 @@ deploy_runtime() {
   cp "$REPO_ROOT/package.json" "$REPO_ROOT/package-lock.json" "$next/"
   /usr/bin/ditto "$REPO_ROOT/dist" "$next/dist"
   /usr/bin/ditto "$REPO_ROOT/node_modules" "$next/node_modules"
+  mkdir -p "$next/bin"
+  cp "$TUNNEL_WRAPPER_SOURCE" "$next/bin/tunnel-client-supervised"
+  chmod 755 "$next/bin/tunnel-client-supervised"
   (
     cd "$next"
     "$NPM_BIN" prune --omit=dev --ignore-scripts --no-audit --no-fund >/dev/null
@@ -122,13 +127,13 @@ PY
 }
 
 write_plist() {
-  /usr/bin/python3 - "$PLIST" "$LABEL" "$APP_EXE" "$RUNTIME_ROOT" "$PROFILE" "$PROFILE_DIR" "$STATE_DIR" "$LOG_DIR" "$TUNNEL_CLIENT_BIN" "$RUNTIME_PATH" "$HEALTH_LISTEN_ADDR" <<'PY'
+  /usr/bin/python3 - "$PLIST" "$LABEL" "$APP_EXE" "$RUNTIME_ROOT" "$PROFILE" "$PROFILE_DIR" "$STATE_DIR" "$LOG_DIR" "$TUNNEL_WRAPPER" "$TUNNEL_CLIENT_BIN" "$RUNTIME_PATH" "$HEALTH_LISTEN_ADDR" <<'PY'
 import plistlib
 import sys
 from pathlib import Path
 
 (plist_path, label, app_exe, runtime_root, profile, profile_dir, state_dir, log_dir,
- tunnel_client, runtime_path, health_addr) = sys.argv[1:]
+ tunnel_wrapper, tunnel_client, runtime_path, health_addr) = sys.argv[1:]
 
 data = {
     "Label": label,
@@ -141,7 +146,8 @@ data = {
         "DANIEL_COMMANDER_STATE_DIR": state_dir,
         "DANIEL_COMMANDER_LOG_DIR": log_dir,
         "DANIEL_COMMANDER_RUNTIME_ROOT": runtime_root,
-        "DANIEL_COMMANDER_TUNNEL_CLIENT": tunnel_client,
+        "DANIEL_COMMANDER_TUNNEL_CLIENT": tunnel_wrapper,
+        "DANIEL_COMMANDER_REAL_TUNNEL_CLIENT": tunnel_client,
         "HEALTH_LISTEN_ADDR": health_addr,
         "HEALTH_URL_FILE": str(Path(state_dir) / "health-url"),
         "LOG_FILE": str(Path(log_dir) / "tunnel-client.jsonl"),
@@ -167,6 +173,7 @@ preflight_install() {
   discover_tools
   [ -f "$PROFILE_FILE" ] || { echo "production profile missing: $PROFILE_FILE"; exit 2; }
   [ -f "$APP_SOURCE" ] || { echo "runtime app source missing"; exit 2; }
+  [ -f "$TUNNEL_WRAPPER_SOURCE" ] || { echo "macOS tunnel wrapper source missing"; exit 2; }
   mkdir -p "$STATE_DIR" "$LOG_DIR" "$HOME/Library/LaunchAgents" "$HOME/Applications"
   chmod 700 "$STATE_DIR" "$LOG_DIR"
   find "$LOG_DIR" -maxdepth 1 -type f -exec chmod 600 {} \; 2>/dev/null || true
@@ -187,6 +194,29 @@ install_service() {
   launchctl kickstart -k "$DOMAIN/$LABEL"
 }
 
+bootstrap_service_with_retry() {
+  attempt=1
+  while [ "$attempt" -le 10 ]; do
+    if launchctl bootstrap "$DOMAIN" "$PLIST" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+    attempt=$((attempt + 1))
+  done
+
+  echo "failed to bootstrap $LABEL after 10 attempts" >&2
+  launchctl bootstrap "$DOMAIN" "$PLIST"
+}
+
+reload_service_from_plist() {
+  if launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1; then
+    launchctl bootout "$DOMAIN/$LABEL" >/dev/null 2>&1 || true
+  fi
+  bootstrap_service_with_retry
+  launchctl enable "$DOMAIN/$LABEL"
+  launchctl kickstart -k "$DOMAIN/$LABEL"
+}
+
 update_runtime() {
   preflight_install
   "$NPM_BIN" --prefix "$REPO_ROOT" run build >/dev/null
@@ -194,9 +224,7 @@ update_runtime() {
   patch_profile_runtime
   "$TUNNEL_CLIENT_BIN" doctor --profile "$PROFILE" --profile-dir "$PROFILE_DIR" --health.listen-addr 127.0.0.1:0 >/dev/null
   write_plist
-  if launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1; then
-    launchctl kickstart -k "$DOMAIN/$LABEL"
-  fi
+  reload_service_from_plist
 }
 
 case "${1:-status}" in
