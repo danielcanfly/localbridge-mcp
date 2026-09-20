@@ -6,6 +6,37 @@ It does **not** provide a hosted relay. Each user runs their own MCP server and 
 
 Current source version: **v0.2.0**. The portable stdio core is qualified on macOS and Linux. The persistent login runtime is qualified on macOS. npm publication remains disabled; releases are source-only.
 
+
+## Install with an AI assistant
+
+You can hand this repository to ChatGPT, Claude, Codex, or another coding assistant and ask it to install LocalBridge MCP on your machine. Use this prompt:
+
+```text
+Install LocalBridge MCP from https://github.com/danielcanfly/localbridge-mcp on this computer.
+
+Read README.md and docs/INSTALL_MACOS.md first. Do not invent credentials. Do not print secrets.
+
+Target: macOS persistent ChatGPT runtime.
+
+Requirements I will provide separately:
+- my OpenAI Secure MCP Tunnel ID
+- my own OpenAI API key with Tunnels permission only
+- the local directories I want LocalBridge MCP to access
+
+Use the repository scripts instead of hand-writing a service:
+1. clone the repo
+2. run npm ci
+3. run npm test
+4. create ~/.config/localbridge-mcp/tunnel-runtime-key with chmod 600, but never display the key
+5. run scripts/setup-macos.sh with my allowlist, tunnel id, and file: key reference
+6. run tunnel-client doctor for the generated profile
+7. verify scripts/macos-service.sh status returns HEALTH=ok and READY=ok
+
+Stop and ask me if any credential, tunnel, or macOS permission is missing.
+```
+
+The assistant can do the local installation work, but every user must bring their own tunnel, credential, and filesystem allowlist. LocalBridge MCP does not ship shared credentials or a hosted relay.
+
 ## What it exposes
 
 LocalBridge MCP provides 17 MCP tools with a LocalBridge-specific `lb_*` surface:
@@ -73,6 +104,9 @@ Example:
 
     mkdir -p "$HOME/.config/localbridge-mcp"
     chmod 700 "$HOME/.config/localbridge-mcp"
+
+    # Paste your own Tunnels-only OpenAI API key locally. Do not commit it.
+    printf '%s' 'YOUR_TUNNELS_ONLY_API_KEY' > "$HOME/.config/localbridge-mcp/tunnel-runtime-key"
     chmod 600 "$HOME/.config/localbridge-mcp/tunnel-runtime-key"
 
     ./scripts/setup-macos.sh \
