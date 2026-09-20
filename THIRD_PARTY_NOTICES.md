@@ -1,5 +1,7 @@
 # Third-party notices
 
+LocalBridge MCP is licensed under the Apache License 2.0. This file preserves required third-party MIT notices for selected upstream-derived execution-core routines.
+
 LocalBridge MCP includes or adapts selected MIT-licensed execution-core routines from the project listed below. Required notices are retained here and in relevant source headers.
 
 ## Desktop Commander MCP
