@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test:p2": "npm run build && node dist/test/p2-core.integration.js",
-    "test": "npm run test:p2 && npm run test:p3 && npm run test:p4 && npm run test:p5 && npm run test:p6 && npm run test:p7 && npm run test:original-p8",
+    "test": "npm run test:p2 && npm run test:p3 && npm run test:p4 && npm run test:p5 && npm run test:p6 && npm run test:p7 && npm run test:original-p8 && npm run test:original-p9",
     "test:p3": "npm run build && node dist/test/p3-mcp.integration.js",
     "test:p4": "npm run build && node dist/test/p4-policy.integration.js",
     "test:p5": "node scripts/test-p5.mjs",
@@ -18,7 +18,8 @@
     "doctor": "./scripts/doctor.sh",
     "test:p7": "npm run build && node dist/test/p7-release.integration.js",
     "test:original-p8": "npm run build && node dist/test/original-p8-lifecycle.integration.js",
-    "release:preflight": "./scripts/release-preflight.sh"
+    "release:preflight": "./scripts/release-preflight.sh",
+    "test:original-p9": "npm run build && node dist/test/original-p9-final.integration.js"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",

@@ -110,20 +110,20 @@ Live qualification covered production update, tunnel crash, Runtime.app crash, s
 
 ## Original P9: full qualification status
 
-Status: PARTIAL, not closed.
+Status: PASS.
 
-Many matrix rows are already covered by P2-P7 automated/live qualification, but the original P9 authority must still be reconciled row-by-row before declaring `DANIEL_COMMANDER_V0_1_PASS`.
+The original P9 authority has now been reconciled row-by-row in `docs/ORIGINAL_P9_STATUS.md`.
 
-Known rows requiring explicit final adjudication include at least:
+Final adjudicated rows:
 
-- line-ending preservation;
-- complete regex/literal/search-pagination/cancellation matrix;
-- terminal stderr and completed-session readability;
-- multiple simultaneous sessions;
-- explicit remote reconnect evidence under the final production build;
-- incorporation of the now-PASS original P8 sleep-prevention and lifecycle-shutdown evidence into the final matrix.
+- line-ending preservation: PASS;
+- complete regex/literal/search-pagination/cancellation matrix: PASS;
+- terminal stderr and completed-session readability: PASS;
+- multiple simultaneous sessions: PASS;
+- explicit remote reconnect evidence under the final production build: PASS;
+- incorporation of the now-PASS original P8 sleep-prevention and lifecycle-shutdown evidence into the final matrix: PASS.
 
-A public release candidate does not imply final v0.1 qualification.
+This closes the original construction P0-P9 matrix for Daniel Commander v0.1 source qualification. A final `v0.1.0` release tag remains a separate release-management decision.
 
 ## Frozen next-step rule
 
@@ -132,6 +132,6 @@ Public RC visibility may proceed only after current release-preflight/CI/privacy
 After the Public Visibility Gate, the original authority resumes at the remaining incomplete work:
 
 1. original P8 is now closed/PASS;
-2. execute original P9 row-by-row qualification;
-3. only then consider `DANIEL_COMMANDER_V0_1_PASS`;
+2. original P9 is now closed/PASS;
+3. `DANIEL_COMMANDER_V0_1_PASS` may be considered after final source, CI, and live-runtime evidence are attached to the P9 commit;
 4. retire legacy Oracle MCP infrastructure only after the full replacement remains live-qualified and rollback evidence is no longer needed.
