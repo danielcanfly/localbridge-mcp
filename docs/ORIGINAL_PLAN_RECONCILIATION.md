@@ -90,9 +90,9 @@ This renumbering did not remove the original P0-P7 requirements, but it obscured
 
 ## Original P8: lifecycle status before resuming work
 
-Status: PARTIAL, not closed.
+Status: PASS.
 
-Already implemented and qualified:
+Implemented and qualified:
 
 - launchd login auto-start;
 - tunnel-client + MCP child supervision;
@@ -101,13 +101,12 @@ Already implemented and qualified:
 - log management;
 - loopback health/readiness;
 - signal-based graceful shutdown;
-- stable Runtime.app identity/TCC preservation.
+- stable Runtime.app identity/TCC preservation;
+- active-only `caffeinate -i -w <tunnel-pid>` sleep prevention;
+- no Daniel Commander caffeinate process while the service is stopped;
+- launchd plist reload during updates so runtime environment changes take effect.
 
-Not yet implemented from the original frozen plan:
-
-- active-only `caffeinate` / no-sleep behavior.
-
-Therefore original P8 must not be declared complete until no-sleep behavior is implemented and qualified.
+Live qualification covered production update, tunnel crash, Runtime.app crash, stop/start, no-sleep assertion ownership, stale-process cleanup, and Runtime.app identity preservation. See `docs/ORIGINAL_P8_STATUS.md`.
 
 ## Original P9: full qualification status
 
@@ -122,8 +121,7 @@ Known rows requiring explicit final adjudication include at least:
 - terminal stderr and completed-session readability;
 - multiple simultaneous sessions;
 - explicit remote reconnect evidence under the final production build;
-- active-only sleep prevention after original P8 is repaired;
-- clean lifecycle shutdown in the final build.
+- incorporation of the now-PASS original P8 sleep-prevention and lifecycle-shutdown evidence into the final matrix.
 
 A public release candidate does not imply final v0.1 qualification.
 
@@ -131,9 +129,9 @@ A public release candidate does not imply final v0.1 qualification.
 
 Public RC visibility may proceed only after current release-preflight/CI/privacy gates are green.
 
-After the Public Visibility Gate, resume the original authority at:
+After the Public Visibility Gate, the original authority resumes at the remaining incomplete work:
 
-1. finish original P8 no-sleep lifecycle requirement;
+1. original P8 is now closed/PASS;
 2. execute original P9 row-by-row qualification;
 3. only then consider `DANIEL_COMMANDER_V0_1_PASS`;
 4. retire legacy Oracle MCP infrastructure only after the full replacement remains live-qualified and rollback evidence is no longer needed.

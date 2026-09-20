@@ -91,9 +91,9 @@ See [docs/INSTALL_MACOS.md](docs/INSTALL_MACOS.md) for the full installation and
     ./scripts/macos-service.sh start
     ./scripts/macos-service.sh uninstall
 
-Normal updates replace the deployed JavaScript bundle without rebuilding the Runtime.app, preserving its macOS privacy authorization.
+Normal updates replace the deployed JavaScript bundle without rebuilding the Runtime.app, preserving its macOS privacy authorization. The update path reloads the LaunchAgent when its runtime environment changes.
 
-The current RC does not currently prevent macOS system sleep. When the Mac sleeps, remote MCP availability pauses until the machine wakes. Active-only `caffeinate` behavior remains an original-v0.1 lifecycle requirement for the next qualification phase.
+Current `main` implements active-only macOS sleep prevention: while the production tunnel is alive, Daniel Commander holds `caffeinate -i -w <tunnel-pid>` and releases it when the service stops or the tunnel exits. This prevents idle system sleep while remote control is active without requesting display wake or overriding lid-close sleep. The tagged `v0.1.0-rc.1` source predates this original-P8 repair.
 
 ## Configuration
 
