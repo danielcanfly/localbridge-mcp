@@ -2,6 +2,21 @@
 
 All notable LocalBridge MCP source releases are documented here.
 
+## [0.2.1] - 2026-09-20
+
+License patch release.
+
+### Changed
+
+- Changed the main LocalBridge MCP project license from MIT to Apache License 2.0.
+- Updated package metadata, README badges, and release documentation to reflect Apache-2.0.
+- Preserved required upstream MIT provenance and notices for selected Desktop Commander MCP-derived execution-core routines in THIRD_PARTY_NOTICES.md.
+
+### Notes
+
+- v0.2.0 remains the original MIT-tagged release artifact.
+- v0.2.1 is the first Apache-2.0-tagged source release.
+
 ## [0.2.0] - 2026-09-20
 
 Product-polished source release after final qualification closure.

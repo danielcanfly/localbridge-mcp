@@ -15,7 +15,7 @@ It exposes local files, search, text editing, persistent shell sessions, Git, SS
 
 | Item | Status |
 | --- | --- |
-| Latest release | `v0.2.0` |
+| Latest release | `v0.2.1` |
 | Distribution | Source release only |
 | npm package | Disabled intentionally (`private: true`) |
 | macOS local core | Qualified |
@@ -24,7 +24,7 @@ It exposes local files, search, text editing, persistent shell sessions, Git, SS
 | Windows | Not yet qualified |
 | Hosted relay | Not provided |
 
-Release: [LocalBridge MCP v0.2.0](https://github.com/danielcanfly/localbridge-mcp/releases/tag/v0.2.0)
+Release: [LocalBridge MCP v0.2.1](https://github.com/danielcanfly/localbridge-mcp/releases/tag/v0.2.1)
 
 ## What LocalBridge MCP does
 
@@ -310,6 +310,7 @@ The release preflight runs the test suite, checks dependency licenses, creates a
 - [Portability](docs/PORTABILITY.md)
 - [Release process](docs/RELEASE_PROCESS.md)
 - [Security policy](SECURITY.md)
+- [v0.2.1 release notes](docs/releases/v0.2.1.md)
 - [v0.2.0 release notes](docs/releases/v0.2.0.md)
 - [Qualification evidence](docs/qualification)
 

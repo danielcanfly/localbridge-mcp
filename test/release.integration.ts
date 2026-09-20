@@ -11,7 +11,7 @@ const changelog = await fs.readFile('CHANGELOG.md', 'utf8');
 const processDoc = await fs.readFile('docs/RELEASE_PROCESS.md', 'utf8');
 const p7 = await fs.readFile('docs/qualification/RELEASE_STATUS.md', 'utf8');
 
-assert.equal(pkg.version, '0.2.0');
+assert.equal(pkg.version, '0.2.1');
 assert.equal(pkg.private, true);
 assert.equal(MCP_SERVER_VERSION, pkg.version);
 console.log('RELEASE_VERSION_PASS');
@@ -48,7 +48,8 @@ for (const path of [
   '.github/ISSUE_TEMPLATE/bug_report.yml',
   '.github/ISSUE_TEMPLATE/feature_request.yml',
   '.github/pull_request_template.md',
-  'docs/releases/v0.2.0.md'
+  'docs/releases/v0.2.0.md',
+  'docs/releases/v0.2.1.md'
 ]) {
   const stat = await fs.stat(path);
   assert.equal(stat.isFile(), true, `missing public project surface: ${path}`);
