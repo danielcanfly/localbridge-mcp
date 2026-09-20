@@ -25,6 +25,10 @@ macOS has the most complete qualification:
 - crash recovery
 - production health/readiness
 - runtime update flow
+- OpenAI Secure MCP Tunnel runtime path
+- ChatGPT connector end-to-end smoke tests for read, write, and shell
+
+This is the only production-oriented desktop runtime path currently advertised by the repository.
 
 ## Linux
 
@@ -34,7 +38,22 @@ There is intentionally no fake launchd abstraction on Linux. A future Linux prod
 
 ## Windows
 
-Parts of the core contain Windows-aware code, but the project does not currently claim Windows qualification. Do not interpret code paths as a support guarantee.
+Windows is **not yet qualified**.
+
+Parts of the core contain Windows-aware code, but the project does not currently claim Windows support. Do not interpret code paths as a support guarantee.
+
+A proper Windows support claim would need a dedicated qualification lane covering at least:
+
+- Windows path handling and drive-letter behavior
+- CRLF/LF line ending preservation
+- PowerShell and/or `cmd.exe` shell behavior
+- long-running process management
+- filesystem permission boundaries
+- service startup, restart, health, and update behavior
+- `tunnel-client` behavior on Windows
+- ChatGPT connector end-to-end smoke tests for read, write, and shell
+
+WSL may be useful for experiments, but WSL should be treated as an unqualified Linux-like environment until it has its own focused validation. Do not advertise Windows or WSL as a supported LocalBridge install target from this repository yet.
 
 ## Remote transports
 
