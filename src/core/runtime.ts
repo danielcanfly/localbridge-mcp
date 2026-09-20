@@ -14,7 +14,10 @@ export function readProcessOutput(pid: number, offset = 0, length = 1000) {
   return result;
 }
 
-export function interactWithProcess(pid: number, input: string): boolean {
+export async function interactWithProcess(pid: number, input: string): Promise<boolean> {
+  if (!(await commandManager.validateCommand(input))) {
+    throw new Error('Terminal input blocked by Daniel Commander policy');
+  }
   return terminalManager.sendInputToProcess(pid, input);
 }
 

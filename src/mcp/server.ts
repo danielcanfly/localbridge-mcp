@@ -299,7 +299,7 @@ export function createDanielCommanderServer(): McpServer {
       annotations: { title: 'Interact with process', readOnlyHint: false, destructiveHint: true, openWorldHint: true }
     },
     safe(async ({ pid, input }) => {
-      if (!interactWithProcess(pid, input)) throw new Error(`Process ${pid} not found or stdin unavailable`);
+      if (!(await interactWithProcess(pid, input))) throw new Error(`Process ${pid} not found or stdin unavailable`);
       return textResult(`INPUT_SENT pid=${pid}`);
     })
   );

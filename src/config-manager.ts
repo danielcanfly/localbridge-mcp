@@ -1,5 +1,4 @@
 import fs from 'node:fs/promises';
-import os from 'node:os';
 import path from 'node:path';
 import { CONFIG_FILE } from './config.js';
 
@@ -25,7 +24,7 @@ function defaults(): ServerConfig {
       'iptables', 'firewall', 'netsh', 'sfc', 'bcdedit', 'reg', 'net', 'sc', 'runas', 'cipher', 'takeown'
     ],
     defaultShell: defaultShell(),
-    allowedDirectories: [os.homedir()],
+    allowedDirectories: [],
     fileReadLineLimit: 1000,
     fileWriteLineLimit: 2000
   };

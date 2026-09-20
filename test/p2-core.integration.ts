@@ -105,9 +105,12 @@ const interactive = await core.startProcess(
   750
 );
 assert.equal(interactive.pid > 0, true);
-assert.equal(core.interactWithProcess(interactive.pid, 'hello'), true);
-await new Promise(r => setTimeout(r, 200));
-const out = core.readProcessOutput(interactive.pid, 0, 100);
+assert.equal(await core.interactWithProcess(interactive.pid, 'hello'), true);
+let out = core.readProcessOutput(interactive.pid, 0, 100);
+for (let i = 0; i < 40 && !out.lines.join('\n').includes('ECHO:hello'); i++) {
+  await new Promise(r => setTimeout(r, 50));
+  out = core.readProcessOutput(interactive.pid, 0, 100);
+}
 assert.match(out.lines.join('\n'), /ECHO:hello/);
 assert.equal(core.listSessions().active.some((s: any) => s.pid === interactive.pid), true);
 assert.equal(core.forceTerminate(interactive.pid), true);

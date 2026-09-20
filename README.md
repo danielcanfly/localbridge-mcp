@@ -2,16 +2,16 @@
 
 Self-hosted MCP computer-control server for local files, search, surgical editing, persistent terminal sessions, and SSH workflows.
 
-> Status: pre-alpha. P0 through P3 are qualified. The 17-tool MCP surface works locally and from ChatGPT Plus through OpenAI Secure MCP Tunnel.
+> Status: pre-alpha. P0 through P4 are qualified. The 17-tool MCP surface works locally and from ChatGPT through a private Secure MCP Tunnel, including real Git workflows and persistent SSH to an existing remote host.
 
 ## Design goals
 
 - Run the execution engine on the user's own Mac, Linux machine, or VM.
-- No shared hosted relay is provided by this project.
-- No vendor telemetry, analytics, or usage quota in the Daniel Commander core.
-- Support local MCP clients and a private remote path for ChatGPT.
-- Keep terminal sessions interactive across MCP tool calls.
-- Keep the runtime small by excluding PDF, DOCX, Excel, image-preview, UI, onboarding, and hosted-remote product code.
+- Do not require a shared Daniel Commander cloud relay.
+- Do not impose a Daniel Commander usage quota.
+- Keep the runtime headless and small.
+- Support local files, ripgrep search, targeted edits, persistent shell sessions, Git through the shell, and SSH through the shell.
+- Keep user-specific paths, SSH aliases, credentials, keys, and tunnel secrets outside the repository.
 
 ## Current MCP surface
 
@@ -22,22 +22,32 @@ Daniel Commander exposes 17 focused tools covering:
 - asynchronous ripgrep filename/content search
 - persistent terminal process start/output/stdin/session/termination
 
-The selected upstream-derived core is pinned to Desktop Commander MCP v0.2.51 commit `092ce0b841e86455f12e41f4dc36399a7522ecb5`. See `THIRD_PARTY_NOTICES.md`, `docs/P2_SOURCE_CENSUS.md`, and `docs/P3_STATUS.md`.
+The selected upstream-derived core is pinned to Desktop Commander MCP v0.2.51 commit `092ce0b841e86455f12e41f4dc36399a7522ecb5`. See `THIRD_PARTY_NOTICES.md`, `docs/P2_SOURCE_CENSUS.md`, `docs/P3_STATUS.md`, and `docs/P4_STATUS.md`.
 
 ## Remote path
 
 The qualified ChatGPT path is:
 
     ChatGPT
-      -> personal development plugin
+      -> private development app
       -> OpenAI Secure MCP Tunnel
       -> tunnel-client on the user's machine
       -> Daniel Commander stdio MCP
 
-No Desktop Commander Cloud relay is required by Daniel Commander.
+The same local terminal surface can use the user's existing SSH configuration to operate a remote machine. No Daniel Commander agent needs to be installed on that remote machine.
+
+## Configuration
+
+Fresh installs are fail-closed. Filesystem access starts with:
+
+    allowedDirectories: []
+
+Explicit roots must be configured in the user's external Daniel Commander config before filesystem tools can access them. Do not commit personal paths, credentials, SSH keys, tunnel identifiers, or runtime API keys to a public repository.
 
 ## Security
 
-This project is intended to provide powerful local computer access to an authorized AI client. Filesystem allowlists and command blocklists are guardrails, not a security sandbox.
+Daniel Commander is intentionally powerful. Filesystem allowlists and command blocklists are guardrails, not a security sandbox.
 
-Do not expose an unauthenticated shell-capable MCP endpoint to the public Internet.
+The terminal runs with the permissions of the operating-system user and can reach resources that are outside the filesystem-tool allowlist. Nested commands inside interpreters, scripts, or remote SSH command strings must not be assumed safe merely because a top-level command parser exists.
+
+For stronger isolation, use OS permissions, a dedicated OS account, a container, or a VM. Do not expose an unauthenticated shell-capable MCP endpoint to the public Internet.
