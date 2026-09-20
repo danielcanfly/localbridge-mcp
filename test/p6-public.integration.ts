@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import os from 'node:os';
 
 const service = await fs.readFile('scripts/macos-service.sh', 'utf8');
 const common = await fs.readFile('scripts/macos-common.sh', 'utf8');
@@ -54,8 +53,14 @@ console.log('P6_SOURCE_DISTRIBUTION_CONTRACT_PASS');
 const sourceFiles = [
   service, common, setupCore, setupMac, doctor, readme, security, portability
 ];
-const homeName = os.homedir().split('/').filter(Boolean).pop();
+const machinePathPatterns = [
+  /\/Users\/[^/<>"'\\s]+\//,
+  /\/home\/[^/<>"'\\s]+\//,
+  /[A-Za-z]:\\\\Users\\\\[^\\\\<>"'\\s]+\\\\/
+];
 for (const content of sourceFiles) {
-  if (homeName) assert.equal(content.includes(homeName), false);
+  for (const pattern of machinePathPatterns) {
+    assert.equal(pattern.test(content), false, `machine-specific path found: ${pattern}`);
+  }
 }
 console.log('P6_NO_MACHINE_IDENTITY_PASS');
