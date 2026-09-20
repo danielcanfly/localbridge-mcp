@@ -1,15 +1,161 @@
 # LocalBridge MCP
 
-LocalBridge MCP is a self-hosted MCP computer-control server for local files, text editing, search, persistent shell sessions, Git workflows, and SSH-driven operations.
+[![CI](https://github.com/danielcanfly/localbridge-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/danielcanfly/localbridge-mcp/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/danielcanfly/localbridge-mcp/actions/workflows/codeql.yml/badge.svg)](https://github.com/danielcanfly/localbridge-mcp/actions/workflows/codeql.yml)
+[![Release](https://img.shields.io/github/v/release/danielcanfly/localbridge-mcp?label=release)](https://github.com/danielcanfly/localbridge-mcp/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-It does **not** provide a hosted relay. Each user runs their own MCP server and owns their machine, credentials, tunnel, filesystem allowlist, and remote hosts.
+LocalBridge MCP is a self-hosted MCP server that lets online AI assistants work with a local computer through a controlled, user-owned bridge.
 
-Current source version: **v0.2.0**. The portable stdio core is qualified on macOS and Linux. The persistent login runtime is qualified on macOS. npm publication remains disabled; releases are source-only.
+It exposes local files, search, text editing, persistent shell sessions, Git, SSH, and other command-line workflows to MCP clients such as ChatGPT, Claude, Codex, or any client that can connect to a stdio MCP server.
 
+> LocalBridge MCP is intentionally powerful. It is designed for trusted, single-owner local automation. It is not a hosted service, not a sandbox, and not an unauthenticated public endpoint.
 
-## Install with an AI assistant
+## Status
 
-You can hand this repository to ChatGPT, Claude, Codex, or another coding assistant and ask it to install LocalBridge MCP on your machine. Use this prompt:
+| Item | Status |
+| --- | --- |
+| Latest release | `v0.2.0` |
+| Distribution | Source release only |
+| npm package | Disabled intentionally (`private: true`) |
+| macOS local core | Qualified |
+| Linux local core | Qualified in CI |
+| macOS persistent runtime | Qualified with `launchd` and Runtime.app |
+| Windows | Not yet qualified |
+| Hosted relay | Not provided |
+
+Release: [LocalBridge MCP v0.2.0](https://github.com/danielcanfly/localbridge-mcp/releases/tag/v0.2.0)
+
+## What LocalBridge MCP does
+
+LocalBridge MCP gives an AI assistant a tool surface for practical local work:
+
+- read, list, and inspect allowed local files;
+- write, move, create, and patch text files;
+- run fast text search with session-based pagination;
+- start and manage persistent shell sessions;
+- drive Git, SSH, test runners, package managers, Docker, and other CLI workflows through the shell;
+- run as a local stdio MCP server;
+- on macOS, run persistently behind OpenAI Secure MCP Tunnel through a local Runtime.app and `launchd`.
+
+LocalBridge MCP does **not** provide a hosted relay. It also does not provide shared credentials, a shared tunnel, a cloud agent, a web dashboard, model hosting, or billing infrastructure.
+
+Each user brings their own computer, credentials, tunnel, filesystem allowlist, and risk boundary.
+
+## When to use it
+
+Use LocalBridge MCP when you want an AI assistant to help with local engineering and operations work, for example:
+
+- inspect and edit a local repository;
+- run test suites and read failures;
+- search across project files;
+- manage long-running shell sessions;
+- operate SSH workflows from your machine;
+- connect ChatGPT or another remote MCP client to a private local environment without exposing a public shell server.
+
+Do not use LocalBridge MCP as a security sandbox. Shell commands run with the permissions of the operating-system account that launches it.
+
+## Quick start: local stdio MCP server
+
+Requirements:
+
+- Node.js 20 or newer;
+- npm;
+- macOS or Linux for the currently qualified core path.
+
+Clone and install:
+
+```bash
+git clone https://github.com/danielcanfly/localbridge-mcp.git
+cd localbridge-mcp
+npm ci
+npm test
+```
+
+Choose the directories LocalBridge MCP may access:
+
+```bash
+./scripts/setup-core.sh --allow "$HOME/Projects"
+```
+
+The setup is fail-closed. If no `--allow` value is supplied, filesystem tools cannot access any directory.
+
+Inspect the generated local configuration:
+
+```bash
+./scripts/doctor.sh
+```
+
+`setup-core.sh` prints the stdio command to register in an MCP client.
+
+## macOS persistent ChatGPT runtime
+
+The qualified macOS production path is:
+
+```text
+ChatGPT
+  -> your MCP app
+  -> your OpenAI Secure MCP Tunnel
+  -> launchd
+  -> LocalBridge MCP Runtime.app
+  -> tunnel-client
+  -> Node.js
+  -> LocalBridge MCP
+```
+
+Additional requirements:
+
+- macOS;
+- Xcode Command Line Tools;
+- `tunnel-client` installed;
+- your own OpenAI Secure MCP Tunnel ID;
+- your own API key restricted to the `Tunnels` permission;
+- a local filesystem allowlist.
+
+Create a private runtime key file. Do not paste secrets into issues, commits, release assets, or chat transcripts.
+
+```bash
+mkdir -p "$HOME/.config/localbridge-mcp"
+chmod 700 "$HOME/.config/localbridge-mcp"
+
+printf '%s' 'YOUR_TUNNELS_ONLY_API_KEY' > "$HOME/.config/localbridge-mcp/tunnel-runtime-key"
+chmod 600 "$HOME/.config/localbridge-mcp/tunnel-runtime-key"
+```
+
+Install the macOS runtime:
+
+```bash
+./scripts/setup-macos.sh \
+  --allow "$HOME/Projects" \
+  --tunnel-id YOUR_TUNNEL_ID \
+  --api-key-ref "file:$HOME/.config/localbridge-mcp/tunnel-runtime-key"
+```
+
+Verify:
+
+```bash
+./scripts/macos-service.sh status
+/opt/homebrew/bin/tunnel-client doctor \
+  --profile localbridge-prod \
+  --profile-dir "$HOME/.config/tunnel-client" \
+  --health.listen-addr 127.0.0.1:0
+```
+
+A healthy service reports:
+
+```text
+LAUNCHD=loaded
+STATE=running
+TCC_PREFLIGHT=ok
+HEALTH=ok
+READY=ok
+```
+
+See [docs/INSTALL_MACOS.md](docs/INSTALL_MACOS.md) for the full installation, update, profile-only validation, and uninstall flow.
+
+## AI-assisted install prompt
+
+You can give this repository to ChatGPT, Claude, Codex, or another coding assistant and ask it to install LocalBridge MCP on your machine. Use a prompt like this:
 
 ```text
 Install LocalBridge MCP from https://github.com/danielcanfly/localbridge-mcp on this computer.
@@ -18,155 +164,123 @@ Read README.md and docs/INSTALL_MACOS.md first. Do not invent credentials. Do no
 
 Target: macOS persistent ChatGPT runtime.
 
-Requirements I will provide separately:
-- my OpenAI Secure MCP Tunnel ID
-- my own OpenAI API key with Tunnels permission only
-- the local directories I want LocalBridge MCP to access
+I will provide separately:
+- my OpenAI Secure MCP Tunnel ID;
+- my own OpenAI API key with Tunnels permission only;
+- the local directories I want LocalBridge MCP to access.
 
 Use the repository scripts instead of hand-writing a service:
-1. clone the repo
-2. run npm ci
-3. run npm test
-4. create ~/.config/localbridge-mcp/tunnel-runtime-key with chmod 600, but never display the key
-5. run scripts/setup-macos.sh with my allowlist, tunnel id, and file: key reference
-6. run tunnel-client doctor for the generated profile
-7. verify scripts/macos-service.sh status returns HEALTH=ok and READY=ok
+1. clone the repo;
+2. run npm ci;
+3. run npm test;
+4. create ~/.config/localbridge-mcp/tunnel-runtime-key with chmod 600, but never display the key;
+5. run scripts/setup-macos.sh with my allowlist, tunnel id, and file: key reference;
+6. run tunnel-client doctor for the generated profile;
+7. verify scripts/macos-service.sh status returns HEALTH=ok and READY=ok.
 
-Stop and ask me if any credential, tunnel, or macOS permission is missing.
+Stop and ask me if any credential, tunnel, macOS permission, or allowlist is missing.
 ```
 
-The assistant can do the local installation work, but every user must bring their own tunnel, credential, and filesystem allowlist. LocalBridge MCP does not ship shared credentials or a hosted relay.
+The assistant can perform local setup work, but every user must provide their own tunnel, key, and filesystem boundaries.
 
-## What it exposes
+## MCP tool surface
 
-LocalBridge MCP provides 17 MCP tools with a LocalBridge-specific `lb_*` surface:
+LocalBridge MCP exposes 17 tools using a product-owned `lb_*` namespace:
 
-- `lb_read_text`, `lb_read_many_texts`, `lb_list_entries`, `lb_stat_path`
-- `lb_write_text`, `lb_make_directory`, `lb_move_path`, `lb_patch_text_block`
-- `lb_search_start`, `lb_search_read`, `lb_search_cancel`, `lb_search_sessions`
-- `lb_run_shell`, `lb_shell_output`, `lb_shell_input`, `lb_shell_sessions`, `lb_shell_kill`
+| Area | Tools |
+| --- | --- |
+| Filesystem read | `lb_read_text`, `lb_read_many_texts`, `lb_list_entries`, `lb_stat_path` |
+| Filesystem write | `lb_write_text`, `lb_make_directory`, `lb_move_path`, `lb_patch_text_block` |
+| Search | `lb_search_start`, `lb_search_read`, `lb_search_cancel`, `lb_search_sessions` |
+| Shell | `lb_run_shell`, `lb_shell_output`, `lb_shell_input`, `lb_shell_sessions`, `lb_shell_kill` |
 
-Git, Docker, SSH, systemd, test runners, and similar workflows use the general shell surface instead of product-specific wrappers.
-
-## Support matrix
-
-| Capability | macOS | Linux | Windows |
-| --- | --- | --- | --- |
-| stdio MCP core | Qualified | Qualified in CI | Not yet qualified |
-| filesystem/search/edit | Qualified | Qualified in CI | Not yet qualified |
-| persistent shell sessions | Qualified | Qualified in CI | Not yet qualified |
-| launch-at-login runtime | Qualified with launchd | Not implemented | Not implemented |
-| macOS protected-folder handling | Qualified with Runtime.app/TCC | N/A | N/A |
-| OpenAI Secure MCP Tunnel path | Qualified on macOS | Core-compatible, not production-qualified here | Not qualified |
-
-## Quick start: local stdio core
-
-Requirements:
-
-- Node.js 20 or newer
-- npm
-- macOS or Linux for the currently qualified core path
-
-Clone the repository, then choose the directories the filesystem tools are allowed to access:
-
-    ./scripts/setup-core.sh --allow "$HOME/Projects"
-
-The setup is fail-closed. If no `--allow` values are supplied, filesystem tools cannot access any directory.
-
-The script prints the stdio command you can register in an MCP client.
-
-You can inspect the installation without printing secrets:
-
-    ./scripts/doctor.sh
-
-## macOS persistent ChatGPT runtime
-
-The macOS production path is:
-
-    ChatGPT
-      -> your MCP app
-      -> your OpenAI Secure MCP Tunnel
-      -> launchd
-      -> LocalBridge MCP Runtime.app
-      -> tunnel-client
-      -> Node
-      -> LocalBridge MCP
-
-Requirements in addition to the core:
-
-- macOS
-- Xcode Command Line Tools
-- `tunnel-client` already installed
-- your own Secure MCP Tunnel ID
-- your own control-plane credential stored outside the repository
-
-Example:
-
-    mkdir -p "$HOME/.config/localbridge-mcp"
-    chmod 700 "$HOME/.config/localbridge-mcp"
-
-    # Paste your own Tunnels-only OpenAI API key locally. Do not commit it.
-    printf '%s' 'YOUR_TUNNELS_ONLY_API_KEY' > "$HOME/.config/localbridge-mcp/tunnel-runtime-key"
-    chmod 600 "$HOME/.config/localbridge-mcp/tunnel-runtime-key"
-
-    ./scripts/setup-macos.sh \
-      --allow "$HOME/Projects" \
-      --tunnel-id YOUR_TUNNEL_ID \
-      --api-key-ref "file:$HOME/.config/localbridge-mcp/tunnel-runtime-key"
-
-LocalBridge MCP never ships a shared tunnel ID, API key, SSH key, or hosted relay.
-
-See [docs/INSTALL_MACOS.md](docs/INSTALL_MACOS.md) for the full installation and update flow.
-
-## Service commands on macOS
-
-    ./scripts/macos-service.sh status
-    ./scripts/macos-service.sh update
-    ./scripts/macos-service.sh restart
-    ./scripts/macos-service.sh stop
-    ./scripts/macos-service.sh start
-    ./scripts/macos-service.sh uninstall
-
-Normal updates replace the deployed JavaScript bundle without rebuilding the Runtime.app, preserving its macOS privacy authorization. The update path reloads the LaunchAgent when its runtime environment changes.
-
-LocalBridge MCP holds active-only macOS sleep prevention while the production tunnel is alive: `caffeinate -i -w <tunnel-pid>`. It releases that assertion when the service stops or the tunnel exits. It does not request display wake or override lid-close sleep.
-
-## Configuration
-
-The default is deliberately fail-closed:
-
-    {
-      "allowedDirectories": []
-    }
-
-See [config.example.json](config.example.json).
-
-User-specific paths, tunnel identifiers, credentials, SSH aliases/keys, and runtime secrets belong in external configuration, never in the repository.
-
-`fileWriteLineLimit` is an advisory chunking threshold for `lb_write_text`. It produces a warning for large writes; it is not a security boundary or hard size cap.
+Git, SSH, package managers, test runners, and deployment workflows use the general shell surface instead of product-specific wrappers.
 
 ## Security model
 
-LocalBridge MCP is intentionally powerful.
+LocalBridge MCP is a local control plane. Treat it like giving an assistant access to your terminal.
 
-Filesystem allowlists and command blocklists are guardrails, not a security sandbox. Shell commands execute with the permissions of the operating-system user. Shells, interpreters, scripts, and remote SSH commands can reach resources outside the filesystem-tool allowlist if the OS user can reach them.
+Filesystem allowlists and command blocklists are guardrails, not an operating-system sandbox. Shells, interpreters, scripts, SSH commands, and package managers can reach resources available to the OS user that runs LocalBridge MCP.
 
-For stronger isolation, use a dedicated OS account, container, or VM. Never expose an unauthenticated shell-capable MCP endpoint to the public Internet.
+Recommended practices:
 
-Read [SECURITY.md](SECURITY.md) before enabling remote access.
+- use a dedicated OS account, VM, container, or disposable workspace for higher-risk work;
+- keep credentials outside the repository;
+- restrict OpenAI API keys to the minimum required permission, normally `Tunnels` only;
+- avoid broad filesystem allowlists such as `$HOME` unless you intentionally want that scope;
+- do not expose an unauthenticated shell-capable MCP endpoint to the public Internet;
+- review [SECURITY.md](SECURITY.md) before enabling remote access.
 
-## Qualification and release evidence
+## macOS service commands
 
-Product qualification evidence lives under [docs/qualification](docs/qualification). It is retained for auditability but kept out of the main product path.
+```bash
+./scripts/macos-service.sh status
+./scripts/macos-service.sh update
+./scripts/macos-service.sh restart
+./scripts/macos-service.sh stop
+./scripts/macos-service.sh start
+./scripts/macos-service.sh uninstall
+```
 
-## License and notices
+Normal updates replace the deployed JavaScript runtime without rebuilding the Runtime.app, preserving macOS privacy authorization when possible.
 
-LocalBridge MCP is MIT licensed. Third-party license and provenance notices are preserved in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+The macOS runtime uses active-only sleep prevention while the production tunnel is alive:
+
+```text
+caffeinate -i -w <tunnel-pid>
+```
+
+The assertion is released when the service stops or the tunnel exits. It does not request display wake, prevent lid-close sleep, or manage non-macOS services.
+
+## Configuration
+
+Default configuration is fail-closed:
+
+```json
+{
+  "allowedDirectories": []
+}
+```
+
+See [config.example.json](config.example.json).
+
+User-specific paths, tunnel IDs, API keys, SSH aliases, private keys, and runtime secrets belong in external configuration, never in this repository.
+
+`fileWriteLineLimit` is an advisory chunking threshold for `lb_write_text`. It warns about large writes; it is not a security boundary or hard size cap.
+
+## Repository layout
+
+```text
+src/                 MCP server and local execution core
+scripts/             setup, doctor, release, and macOS service scripts
+runtime-app/         macOS Runtime.app Swift entrypoint
+test/                integration qualification suites
+docs/                architecture, installation, portability, and release docs
+docs/qualification/ historical qualification evidence
+```
 
 ## Development
 
-    npm ci
-    npm test
-    npm run release:preflight
+```bash
+npm ci
+npm test
+npm run release:preflight
+```
 
-The npm package is marked `private` intentionally. This repository is source distribution, not an npm registry release.
+The release preflight runs the test suite, checks dependency licenses, creates a clean source archive, installs it in a temporary home, tests it again, audits dependencies, and prints the source archive SHA-256.
+
+## Documentation
+
+- [macOS installation](docs/INSTALL_MACOS.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Portability](docs/PORTABILITY.md)
+- [Release process](docs/RELEASE_PROCESS.md)
+- [Security policy](SECURITY.md)
+- [v0.2.0 release notes](docs/releases/v0.2.0.md)
+- [Qualification evidence](docs/qualification)
+
+## Provenance and license
+
+LocalBridge MCP is released under the [MIT License](LICENSE).
+
+Selected execution-core code is derived from Desktop Commander MCP under the MIT license. Required third-party license and provenance notices are preserved in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
