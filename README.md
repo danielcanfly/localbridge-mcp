@@ -55,6 +55,36 @@ Use LocalBridge MCP when you want an AI assistant to help with local engineering
 
 Do not use LocalBridge MCP as a security sandbox. Shell commands run with the permissions of the operating-system account that launches it.
 
+## Before you install
+
+LocalBridge MCP cannot be installed completely from this repository alone. The repository provides the server, scripts, and documentation. The user provides the local authority boundary.
+
+### Required user inputs
+
+| Required input | What it means | Who provides it | Safe handling |
+| --- | --- | --- | --- |
+| OpenAI Secure MCP Tunnel ID | The tunnel identifier, usually starting with `tunnel_` | User | May be typed into setup commands; do not invent it |
+| Tunnels-only API key | An OpenAI API key restricted to the `Tunnels` permission | User | Store in a local file; do not paste into chat, commits, logs, or issues |
+| Filesystem allowlist | Local directories LocalBridge MCP may read/write through filesystem tools | User | Start narrow, for example one project folder; avoid `$HOME` unless intentional |
+| macOS privacy approval | Permission for LocalBridge MCP Runtime.app to access protected folders such as Desktop or Documents | User through macOS prompts | Approve only folders you intend the assistant to use |
+| `tunnel-client` installation | The OpenAI tunnel client binary available on the local machine | User or installer | The installer may check for it, but should stop if it is missing |
+
+### Installer behavior for AI assistants
+
+If you are an AI assistant installing LocalBridge MCP:
+
+1. Read this README and `docs/INSTALL_MACOS.md` before running commands.
+2. Check that Node.js, npm, and, for the ChatGPT tunnel path, `tunnel-client` are installed.
+3. Ask the user for the tunnel ID if it is not already available.
+4. Ask the user to create the Tunnels-only API key locally, or to provide a local file path containing it. Do not ask them to paste the key into chat.
+5. Ask which directories should be allowlisted. Do not choose broad directories on behalf of the user.
+6. Stop before installing the persistent macOS service if the tunnel ID, key file, allowlist, or required macOS permission is missing.
+7. Never generate fake credentials, tunnel IDs, SSH keys, or API keys.
+8. Never store credentials in the repository.
+9. Never print API keys, SSH keys, or tunnel secrets.
+
+For local stdio-only use, no tunnel ID or tunnel API key is required. The user still needs to choose an allowlist.
+
 ## Quick start: local stdio MCP server
 
 Requirements:
