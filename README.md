@@ -22,6 +22,10 @@ It is not a cloud agent. It is not a hosted relay. It is not a sandbox. It is yo
 
 > LocalBridge MCP is intentionally powerful. Treat it like giving an assistant access to a terminal, not like installing a harmless browser bookmark.
 
+### Why I built it
+
+For the engineering story behind LocalBridge MCP, including the cost motivation, ChatGPT-to-macOS architecture, runtime reliability work, and how it fits alongside Codex and API usage, see [AI Engineering Field Notes Part 02: Codex Quota Wasn’t Enough, So I Gave ChatGPT a Way Into My Mac](https://danielcanfly.com/en/blog/ai-engineering-field-notes-part-2/).
+
 ## In one minute
 
 Use LocalBridge MCP when you want an online AI assistant to help with local computer work, for example:
