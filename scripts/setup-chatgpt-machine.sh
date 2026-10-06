@@ -68,6 +68,31 @@ prompt() {
   printf '%s' "$1" >&2
 }
 
+require_tunnel_client() {
+  if [ -n "${LOCALBRIDGE_MCP_TUNNEL_CLIENT:-}" ]; then
+    [ -x "$LOCALBRIDGE_MCP_TUNNEL_CLIENT" ] || {
+      echo "LOCALBRIDGE_MCP_TUNNEL_CLIENT is not executable: $LOCALBRIDGE_MCP_TUNNEL_CLIENT" >&2
+      exit 2
+    }
+    return 0
+  fi
+
+  if command -v tunnel-client >/dev/null 2>&1; then
+    return 0
+  fi
+
+  cat >&2 <<'EOF'
+tunnel-client not found.
+
+Install the OpenAI tunnel client on macOS first:
+  brew install openai/tools/tunnel-client
+  tunnel-client --version
+
+Then rerun this setup command.
+EOF
+  exit 2
+}
+
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --machine)
@@ -102,6 +127,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 [ "$(uname -s)" = "Darwin" ] || { echo "setup-chatgpt-machine.sh requires macOS" >&2; exit 2; }
+require_tunnel_client
 
 if [ -z "$MACHINE_NAME" ]; then
   prompt "Machine name, for example macbook-air or mac-mini: "
