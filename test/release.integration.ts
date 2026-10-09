@@ -11,7 +11,7 @@ const changelog = await fs.readFile('CHANGELOG.md', 'utf8');
 const processDoc = await fs.readFile('docs/RELEASE_PROCESS.md', 'utf8');
 const p7 = await fs.readFile('docs/qualification/RELEASE_STATUS.md', 'utf8');
 
-assert.equal(pkg.version, '0.2.1');
+assert.equal(pkg.version, '0.2.2');
 assert.equal(pkg.private, true);
 assert.equal(MCP_SERVER_VERSION, pkg.version);
 console.log('RELEASE_VERSION_PASS');
@@ -29,8 +29,20 @@ console.log('RELEASE_CODEQL_PUBLIC_GATE_PASS');
 
 assert.match(preflight, /git archive/);
 assert.match(preflight, /npm audit/);
-assert.match(preflight, /reachable-history privacy scan/i);
+assert.match(preflight, /npm ci --ignore-scripts/);
+assert.ok(preflight.includes("--glob '!.git'"));
+assert.match(preflight, /reachable-history privacy\/author policy/i);
 assert.match(preflight, /noreply/);
+assert.match(preflight, /LEGACY_COMMIT=8ce28f816c244ee0f209b3c46f4f17d25e1f3e77/);
+assert.match(preflight, /release-history-policy\.mjs "\$LEGACY_COMMIT" "\$PATTERN"/);
+const historyPolicy = await fs.readFile('scripts/release-history-policy.mjs', 'utf8');
+assert.match(historyPolicy, /git\(\['rev-list', 'HEAD'\]\)/);
+assert.match(historyPolicy, /new history includes/);
+assert.match(historyPolicy, /matching content withheld from logs/);
+assert.match(historyPolicy, /--no-replace-objects/);
+assert.match(historyPolicy, /protocol\.allow=never/);
+assert.match(historyPolicy, /'grep', '-q', '-E', '-e', privacyPattern/);
+assert.match(historyPolicy, /--is-shallow-repository/);
 console.log('RELEASE_RELEASE_PREFLIGHT_CONTRACT_PASS');
 
 assert.match(finalize, /OWNER_PUBLIC_VISIBILITY_GATE_PENDING/);
@@ -49,7 +61,8 @@ for (const path of [
   '.github/ISSUE_TEMPLATE/feature_request.yml',
   '.github/pull_request_template.md',
   'docs/releases/v0.2.0.md',
-  'docs/releases/v0.2.1.md'
+  'docs/releases/v0.2.1.md',
+  'docs/releases/v0.2.2.md'
 ]) {
   const stat = await fs.stat(path);
   assert.equal(stat.isFile(), true, `missing public project surface: ${path}`);

@@ -64,6 +64,8 @@ try {
   const processTool = listed.tools.find(tool => tool.name === 'lb_run_shell');
   assert.equal(writeTool?.annotations?.destructiveHint, true);
   assert.equal(processTool?.annotations?.openWorldHint, true);
+  assert.match(processTool?.description ?? '', /isBlocked is a LEGACY WAIT HINT, NOT a policy\/safety denial/);
+  assert.match(processTool?.description ?? '', /status and isComplete/);
   console.log('MCP_TOOL_DISCOVERY_PASS');
 
   const read = await call(client, 'lb_read_text', { file_path: path.join(workspace, 'alpha.txt') });

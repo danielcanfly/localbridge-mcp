@@ -92,6 +92,34 @@ assert.equal(core.searchManager.listSearches().length >= 2, true);
 await assert.rejects(() => core.startProcess('sudo -n true', 250), /blocked/i);
 await assert.rejects(() => core.startProcess('echo "$(sudo -n true)"', 250), /blocked/i);
 
+// LB01: typed wait semantics must not weaken command policy enforcement.
+await assert.rejects(() => core.startProcess('shutdown -h now', 50), /blocked/i);
+const { analyzeProcessState } = await import('../src/core/process-detection.js');
+for (const sample of ['ordinary > ', 'price $ ', 'annotation # ', 'percent % ', 'log >>> ', '>>> done', 'plain > ', 'prefix mysql> ']) {
+  assert.equal(analyzeProcessState(sample).isWaitingForInput, false, sample);
+}
+assert.equal(analyzeProcessState('>>> ').isWaitingForInput, true);
+assert.equal(analyzeProcessState('mysql> ').isWaitingForInput, true);
+const quiet = await core.startProcess("node -e \"setTimeout(()=>console.log('LATE_OK'), 3400)\"", 3000);
+assert.equal(quiet.status, 'initial_wait_elapsed');
+assert.equal(quiet.isComplete, false);
+assert.equal(quiet.isBlocked, true, 'legacy isBlocked must be treated as wait hint, not a security decision');
+assert.equal(quiet.pid > 0, true);
+let quietPage = core.readProcessOutput(quiet.pid, 0, 100);
+for (let i = 0; i < 40 && !quietPage.isComplete; i++) {
+  await new Promise(resolve => setTimeout(resolve, 50));
+  quietPage = core.readProcessOutput(quiet.pid, 0, 100);
+}
+assert.equal(quietPage.isComplete, true);
+assert.match(quietPage.lines.join('\n'), /LATE_OK/);
+const ordinary = await core.startProcess("node -e \"console.log('ordinary > '); setTimeout(()=>console.log('DONE'), 200)\"", 1000);
+assert.equal(ordinary.status, 'process_exit');
+assert.equal(ordinary.isComplete, true);
+assert.equal(ordinary.exitCode, 0);
+if (process.platform !== 'win32') {
+  const spawnError = await core.startProcess("echo HELLO", 1000, '/nonexistent/localbridge-shell');
+  assert.equal(spawnError.status, 'spawn_error');
+}
 const quick = await core.startProcess("printf 'TERM_OK\\n'", 3000);
 assert.match(quick.output, /TERM_OK/);
 

@@ -203,11 +203,15 @@ export class TerminalManager {
     // For REPL interactions, we need to ensure stdin, stdout, and stderr are properly configured
     // Note: No special stdio options needed here, Node.js handles pipes by default
 
-    // Enhance SSH commands automatically
+    // Preserve explicit SSH TTY choices. The legacy default injects -t only
+    // when no -t/-tt/-T or RequestTTY option was provided by the caller.
+    // Never log the original or modified SSH command: arguments may hold secrets.
     let enhancedCommand = command;
-    if (command.trim().startsWith('ssh ') && !command.includes(' -t')) {
-      enhancedCommand = command.replace(/^ssh /, 'ssh -t ');
-      console.error(`Enhanced SSH command: ${enhancedCommand}`);
+    const trimmedCommand = command.trimStart();
+    const explicitTtyFlag = /(?:^|\s)-(?:t+|T)(?=\s|$)/.test(trimmedCommand);
+    const explicitRequestTty = /(?:^|\s)-o(?:\s+)?RequestTTY\s*=\s*(?:no|yes|force|auto)(?=\s|$)/i.test(trimmedCommand);
+    if (trimmedCommand.startsWith('ssh ') && !explicitTtyFlag && !explicitRequestTty) {
+      enhancedCommand = command.replace(/^(\s*)ssh\s+/, '$1ssh -t ');
     }
 
     // Get the appropriate spawn configuration for the shell
@@ -302,7 +306,9 @@ export class TerminalManager {
       return {
         pid: -1,  // Use -1 to indicate an error state
         output: 'Error: Failed to get process ID. The command could not be executed.',
-        isBlocked: false
+        isBlocked: false,
+        status: 'spawn_error',
+        isComplete: true
       };
     }
 
@@ -332,8 +338,7 @@ export class TerminalManager {
       let periodicCheck: NodeJS.Timeout | null = null;
       let timeoutTimer: NodeJS.Timeout | null = null;
 
-      // Quick prompt patterns for immediate detection
-      const quickPromptPatterns = />>>\s*$|>\s*$|\$\s*$|#\s*$/;
+      // Prompt evaluation uses a single line-anchored, conservative detector below.
 
       const resolveOnce = (result: CommandExecutionResult) => {
         if (resolved) return;
@@ -368,7 +373,9 @@ export class TerminalManager {
         resolveOnce({
           pid: childProcess.pid!,
           output: output + `\nProcess error: ${err.message}`,
-          isBlocked: false
+          isBlocked: false,
+          status: 'process_error',
+          isComplete: true
         });
       };
       // An error emitted between spawn and here (the common case — spawn errors
@@ -407,7 +414,7 @@ export class TerminalManager {
         }
 
         // Immediate check for obvious prompts
-        if (quickPromptPatterns.test(text)) {
+        if (!resolved && analyzeProcessState(output).isWaitingForInput) {
           session.isBlocked = true;
           exitReason = 'early_exit_quick_pattern';
 
@@ -418,7 +425,9 @@ export class TerminalManager {
           resolveOnce({
             pid: childProcess.pid!,
             output,
-            isBlocked: true
+            isBlocked: true,
+            status: 'waiting_for_input',
+            isComplete: false
           });
         }
       });
@@ -461,7 +470,9 @@ export class TerminalManager {
             resolveOnce({
               pid: childProcess.pid!,
               output,
-              isBlocked: true
+              isBlocked: true,
+              status: 'waiting_for_input',
+              isComplete: false
             });
           }
         }
@@ -474,7 +485,9 @@ export class TerminalManager {
         resolveOnce({
           pid: childProcess.pid!,
           output,
-          isBlocked: true
+          isBlocked: true,
+          status: 'initial_wait_elapsed',
+          isComplete: false
         });
       }, timeoutMs);
 
@@ -506,7 +519,10 @@ export class TerminalManager {
         resolveOnce({
           pid: childProcess.pid!,
           output,
-          isBlocked: false
+          isBlocked: false,
+          status: 'process_exit',
+          isComplete: true,
+          exitCode: code
         });
       });
     });

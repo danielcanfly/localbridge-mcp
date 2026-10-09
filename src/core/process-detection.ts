@@ -26,32 +26,12 @@ const REPL_PROMPTS = {
   mongo: ['> ', '... ']
 };
 
-// Error patterns that indicate completion (even with errors)
-const ERROR_COMPLETION_PATTERNS = [
-  /Error:/i,
-  /Exception:/i,
-  /Traceback/i,
-  /SyntaxError/i,
-  /NameError/i,
-  /TypeError/i,
-  /ValueError/i,
-  /ReferenceError/i,
-  /Uncaught/i,
-  /at Object\./i, // Node.js stack traces
-  /^\s*\^/m       // Syntax error indicators
-];
-
-// Process completion indicators
-const COMPLETION_INDICATORS = [
-  /Process finished/i,
-  /Command completed/i,
-  /\[Process completed\]/i,
-  /Program terminated/i,
-  /Exit code:/i
-];
-
 /**
  * Analyze process output to determine current state
+ *
+ * Output can suggest that an interactive process is waiting for input, but it
+ * can never prove that the child exited. Only the process close/error handlers
+ * in TerminalManager have authoritative lifecycle signals.
  */
 export function analyzeProcessState(output: string, pid?: number): ProcessState {
   if (!output || output.trim().length === 0) {
@@ -65,13 +45,12 @@ export function analyzeProcessState(output: string, pid?: number): ProcessState 
 
   const lines = output.split('\n');
   const lastLine = lines[lines.length - 1] || '';
-  const lastFewLines = lines.slice(-3).join('\n');
-
   // Check for REPL prompts (waiting for input)
   const allPrompts = Object.values(REPL_PROMPTS).flat();
-  const detectedPrompt = allPrompts.find(prompt =>
-    lastLine.endsWith(prompt) || lastLine.includes(prompt)
-  );
+  // Only a complete, unterminated prompt line is evidence of interactive input.
+  // Generic shell tokens (> / $ / # / %) are indistinguishable from printed text.
+  const strongPrompts = allPrompts.filter(prompt => !['> ', '$ ', '# ', '% ', '+ ', '... ', '       ', 'bash-', 'zsh-'].includes(prompt));
+  const detectedPrompt = !output.endsWith('\n') && strongPrompts.find(prompt => lastLine === prompt);
 
   if (detectedPrompt) {
     return {
@@ -83,46 +62,8 @@ export function analyzeProcessState(output: string, pid?: number): ProcessState 
     };
   }
 
-  // Check for completion indicators
-  const hasCompletionIndicator = COMPLETION_INDICATORS.some(pattern =>
-    pattern.test(output)
-  );
-
-  if (hasCompletionIndicator) {
-    return {
-      isWaitingForInput: false,
-      isFinished: true,
-      isRunning: false,
-      lastOutput: output
-    };
-  }
-
-  // Check for error completion (errors usually end with prompts, but let's be thorough)
-  const hasErrorCompletion = ERROR_COMPLETION_PATTERNS.some(pattern =>
-    pattern.test(lastFewLines)
-  );
-
-  if (hasErrorCompletion) {
-    // Errors can indicate completion, but check if followed by prompt
-    if (detectedPrompt) {
-      return {
-        isWaitingForInput: true,
-        isFinished: false,
-        isRunning: true,
-        detectedPrompt,
-        lastOutput: output
-      };
-    } else {
-      return {
-        isWaitingForInput: false,
-        isFinished: true,
-        isRunning: false,
-        lastOutput: output
-      };
-    }
-  }
-
-  // Default: process is running, not clearly waiting or finished
+  // Without an authoritative process close/error signal, the child may still
+  // be running regardless of what its stdout/stderr happens to say.
   return {
     isWaitingForInput: false,
     isFinished: false,

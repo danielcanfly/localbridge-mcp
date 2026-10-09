@@ -2,6 +2,18 @@
 
 All notable LocalBridge MCP source releases are documented here.
 
+## [0.2.2] - 2026-10-09
+
+### Changes
+- Add explicit terminal completion, timeout, and output status metadata with backward-compatible optional fields.
+- Improve terminal output follow-up and process detection behavior.
+- Refactor release preflight into isolated static, offline and separately authorized network gates; parameterize review branch/version and protect scratch writes.
+- Upgrade the development-only MCP client test SDK to a patched version resolving GHSA-6qxp-vccf-f47h; require zero-vulnerability npm audit for release.
+
+### Boundaries
+- This source-only release does not by itself qualify or install a Runtime.app upgrade; a separate live rollout is required.
+- SSH forced-PTY behavior remains unchanged; no SSH TTY compatibility claim.
+
 ## [0.2.1] - 2026-09-20
 
 License patch release.

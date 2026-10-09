@@ -46,7 +46,7 @@ try {
   const searchDir = path.join(workspace, 'search');
   await fs.mkdir(searchDir);
   await fs.writeFile(path.join(searchDir, 'alpha.txt'), 'AlphaCase\nregex-token-123\nliteral a.c value\n');
-  await fs.writeFile(path.join(searchDir, 'beta.log'), 'alphacase\nregex-token-456\n');
+  await fs.writeFile(path.join(searchDir, 'beta.cfg'), 'alphacase\nregex-token-456\n');
   for (let i = 0; i < 8; i++) {
     await fs.writeFile(path.join(searchDir, `page-${i}.txt`), `page-needle ${i}\n`);
   }
@@ -81,7 +81,7 @@ try {
   });
   const caseSensitivePage = await waitForSearch(caseSensitive.sessionId);
   assert.equal(caseSensitivePage.results.length, 1);
-  assert.match(caseSensitivePage.results[0].file, /beta\.log$/);
+  assert.match(caseSensitivePage.results[0].file, /beta\.cfg$/);
 
   const caseInsensitive = await core.searchManager.startSearch({
     rootPath: searchDir,
@@ -95,12 +95,12 @@ try {
 
   const files = await core.searchManager.startSearch({
     rootPath: searchDir,
-    pattern: '*.log',
+    pattern: '*.cfg',
     searchType: 'files',
     ignoreCase: false
   });
   const filesPage = await waitForSearch(files.sessionId);
-  assert.deepEqual(filesPage.results.map((r: any) => path.basename(r.file)), ['beta.log']);
+  assert.deepEqual(filesPage.results.map((r: any) => path.basename(r.file)), ['beta.cfg']);
 
   const paged = await core.searchManager.startSearch({
     rootPath: searchDir,

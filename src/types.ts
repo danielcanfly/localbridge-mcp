@@ -22,7 +22,10 @@ export interface TerminalSession {
 export interface CommandExecutionResult {
   pid: number;
   output: string;
-  isBlocked: boolean;
+  isBlocked: boolean; // legacy wait hint, NEVER a policy denial
+  status?: 'waiting_for_input' | 'initial_wait_elapsed' | 'process_exit' | 'process_error' | 'spawn_error' | 'policy_denied';
+  isComplete?: boolean;
+  exitCode?: number | null;
   timingInfo?: TimingInfo;
 }
 

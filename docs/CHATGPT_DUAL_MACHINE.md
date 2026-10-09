@@ -2,10 +2,12 @@
 
 This guide is for running LocalBridge MCP from two macOS machines at the same time, for example:
 
+All usernames and home directories below are placeholders. Replace `air-user` and `mini-user` with the actual account names on your own machines, and do not publish real account or credential paths in a shared repository.
+
 | Machine | macOS user | Suggested profile | Suggested allowlist |
 | --- | --- | --- | --- |
-| MacBook Air | `LOCAL_USER` | `localbridge-macbook-air` | `$HOME/` |
-| Mac mini | `daniel` | `localbridge-mac-mini` | `$HOME/` |
+| MacBook Air | `air-user` | `localbridge-macbook-air` | `/Users/air-user/` |
+| Mac mini | `mini-user` | `localbridge-mac-mini` | `/Users/mini-user/` |
 
 The important rule is simple: **do not make both machines share the same tunnel identity**. A profile such as `localbridge-prod` is fine for a single machine, but it becomes ambiguous once two Macs are online.
 
@@ -18,13 +20,13 @@ ChatGPT
   -> LocalBridge MacBook Air
   -> OpenAI tunnel for MacBook Air
   -> MacBook Air launchd service
-  -> $HOME allowlist
+  -> /Users/air-user allowlist
 
 ChatGPT
   -> LocalBridge Mac mini
   -> OpenAI tunnel for Mac mini
   -> Mac mini launchd service
-  -> $HOME allowlist
+  -> /Users/mini-user allowlist
 ```
 
 Recommended ChatGPT-side app names:
@@ -45,17 +47,17 @@ Select the matching tunnel in each app.
 
 ## Install on MacBook Air
 
-Run this on the MacBook Air as the `LOCAL_USER` macOS user:
+Run this on the MacBook Air as the `air-user` macOS user:
 
 ```bash
-git clone https://github.com/danielcanfly/localbridge-mcp.git
+git clone https://github.com/mini-usercanfly/localbridge-mcp.git
 cd localbridge-mcp
 npm ci
 npm test
 
 sh scripts/setup-chatgpt-machine.sh \
   --machine macbook-air \
-  --allow $HOME
+  --allow /Users/air-user
 ```
 
 The script prompts for:
@@ -75,17 +77,17 @@ health: 127.0.0.1:43127
 
 ## Install on Mac mini
 
-Run this on the Mac mini as the `daniel` macOS user:
+Run this on the Mac mini as the `mini-user` macOS user:
 
 ```bash
-git clone https://github.com/danielcanfly/localbridge-mcp.git
+git clone https://github.com/mini-usercanfly/localbridge-mcp.git
 cd localbridge-mcp
 npm ci
 npm test
 
 sh scripts/setup-chatgpt-machine.sh \
   --machine mac-mini \
-  --allow $HOME
+  --allow /Users/mini-user
 ```
 
 The script prompts for:
@@ -113,9 +115,9 @@ Mac mini example:
 sh scripts/setup-chatgpt-machine.sh \
   --machine mac-mini \
   --profile localbridge-mac-mini \
-  --allow $HOME \
+  --allow /Users/mini-user \
   --tunnel-id tunnel_your_mac_mini_tunnel_id \
-  --api-key-ref file:$HOME/.config/localbridge-mcp/tunnel-runtime-key-mac-mini
+  --api-key-ref file:/Users/mini-user/.config/localbridge-mcp/tunnel-runtime-key-mac-mini
 ```
 
 MacBook Air example:
@@ -124,9 +126,9 @@ MacBook Air example:
 sh scripts/setup-chatgpt-machine.sh \
   --machine macbook-air \
   --profile localbridge-macbook-air \
-  --allow $HOME \
+  --allow /Users/air-user \
   --tunnel-id tunnel_your_macbook_air_tunnel_id \
-  --api-key-ref file:$HOME/.config/localbridge-mcp/tunnel-runtime-key-macbook-air
+  --api-key-ref file:/Users/air-user/.config/localbridge-mcp/tunnel-runtime-key-macbook-air
 ```
 
 Do not commit key files, tunnel IDs, connector URLs, SSH keys, or other secrets.
@@ -173,8 +175,8 @@ pwd
 Expected results:
 
 ```text
-MacBook Air -> LOCAL_USER, $HOME
-Mac mini    -> daniel, $HOME
+MacBook Air -> air-user, /Users/air-user
+Mac mini    -> mini-user, /Users/mini-user
 ```
 
 ## Migrating from the old single-machine service
@@ -204,7 +206,7 @@ Run through the LocalBridge tool:
 whoami && hostname && printf 'HOME=%s\n' "$HOME"
 ```
 
-If ChatGPT says it reached `LOCAL_USER` when you expected `daniel`, the ChatGPT app is still pointed at the MacBook Air tunnel. Edit the ChatGPT developer-mode MCP app and select the Mac mini tunnel.
+If ChatGPT says it reached `air-user` when you expected `mini-user`, the ChatGPT app is still pointed at the MacBook Air tunnel. Edit the ChatGPT developer-mode MCP app and select the Mac mini tunnel.
 
 ### Two machines used the same tunnel
 

@@ -1,0 +1,29 @@
+# LocalBridge MCP scoped ingress/outcome receipts (LB10)
+
+**Status:** isolated source experiment; **OFF by default**. Not installed, released, or attached to an active tunnel. Based on the pinned LB08 independent commit. No connection to LB07's refused OutputEvent typing changes.
+
+## Coverage boundary
+
+`createLocalBridgeMCPServer()` registers the **same 17 legacy tools**, with their existing schemas, descriptions, annotations, error response format, command validation, allowed-directory enforcement and version. None of their handlers or policy implementation is changed by this feature. A trusted in-process unit test or future separately approved server composition can call `createLocalBridgeMCPServer({ receiptBuffer: new ToolReceiptBuffer({ sourceVersion: MCP_SERVER_VERSION }) })`. The default constructor omits the buffer, creating **zero** receipts. There is no user-callable MCP toggle, environment variable, disk writer, console logger, network export, or cloud telemetry endpoint.
+
+Each `safe()` callback begins by recording a random server-generated `ingressId`, with UTC timestamp and a tool name accepted only from the **server's 17-name registry**. It does not read or serialize `args`. The result is classified as `HANDLER_OK` (normal return), `HANDLER_LOCAL_ERROR` (locally returned `isError: true`), or `HANDLER_THROW` (thrown error converted by the legacy `errorResult()`). The buffer records `RESULT_SENT` *only once the safe wrapper has prepared its MCP result for the SDK*. This name **does not** assert client ACK, tunnel transmission, success of transport, or platform decision. Throwable errors are reduced to a fixed broad enum; raw messages remain confined to the unchanged legacy MCP error response and **never enter receipts**.
+
+A retained receipt has at most three fixed phases: `RECEIVED`, exactly one handler outcome, and `RESULT_SENT`. Per-request start/end UTC and monotonic duration (nonnegative) are sampled locally. The buffer records sourceVersion from a strictly validated numeric semver and a random process-instance epoch; both are metadata, not authentication. User-supplied operation IDs are not inspected, recorded or trusted. No caller identity, Auth claim, platform rule name or preinvoke classifier result is inferred.
+
+## Limits and health requirements
+
+- Memory-only buffer, capacity 1 to 256 entries (default 128), FIFO oldest eviction. `snapshot()` returns detached metadata only, not arguments/results.
+- Count fields: totalReceived, totalResultReturned, totalEvicted, lostEventCount, pendingRetained. In-flight receipts evicted under pressure increment lostEventCount; attempts to finalize missing/evicted IDs also increment it. Counts are process-local and reset on restart. No persistent event log is created.
+- A missing receipt is **not evidence of platform preinvoke denial**, even for a timestamped client report: feature may be disabled, instance may have restarted, event may be evicted, registration/schema validation may fail before the wrapper, transport may fail, or a request may be routed elsewhere. Corroboration requires verified feature-on coverage, server/process epoch, retention window, input tool resolution coverage, delivery/response correlation, transport health, synchronized timing and a trusted client-side event ID or platform audit record.
+- Local `RECEIVED` establishes only that the safe handler was entered; `HANDLER_THROW` or `HANDLER_LOCAL_ERROR` establish local semantics. In a genuine platform-side refusal the server generally cannot observe the decision. `PLATFORM_DENIED` is intentionally **not a server phase**.
+- Buffer instrumentation is best-effort/fail-open to preserve legacy tool behavior. If malformed data or memory pressure defeats telemetry, never promote missing data to negative platform evidence. This is *not* durable full-coverage audit logging.
+
+## Data-protection boundaries
+
+**Forbidden in all receipts:** raw input argument keys/values, command_line, stdout/stderr or timing snippets, file content, personal absolute paths, SSH user/host, credential/token/tunnel IDs, prompt content, return body, exception message/stack, caller-supplied UUID, external Auth/session claims. Only fixed phases/error class, allowlisted tool names, generated local correlation ID, build version, timestamps, duration and bounded counters appear in snapshots. No data is automatically printed or exported.
+
+Existing legacy server responses may themselves contain paths/exception details; this feature cannot change those responses without a separate API compatibility/security approval. Existing `terminal-manager.ts` enhanced SSH-command stderr printing and unbounded `OutputEvent.snippet` timing telemetry (LB08 T09 RED) are **out of scope**: changing them would overlap LB07's refused source contract and this feature does not sanitize older logs. LB09 reachable-history/author privacy gate remains separate. The live LocalBridge 0.2.1 installation is unaffected; candidate 0.2.2 is not deployed.
+
+## Test model and integration gate
+
+`test/tool-receipt-telemetry.integration.ts` injects only synthetic handlers into `withToolReceipt()`: success, returned error, throw, client-side nonexistent delivery, spoofed ID, hostile args, secret-bearing mock error/result, 1,000-call eviction and concurrent/nested fake calls. It invokes **no actual** MCP filesystem, shell, SSH, network or platform policy workflow. Run via the compiled `node dist/test/tool-receipt-telemetry.integration.js`, because the project forbids editing `package.json` solely to register this test. Existing MCP/core/policy integration suites run their previously audited isolated fixtures under the scoped scratch HOME/TMPDIR. Do not release or turn on receipt collection without future code review, privacy decision, production telemetry authorization, secure access control, and a per-instance coverage health design.

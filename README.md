@@ -1,3 +1,27 @@
+## Terminal wait and policy-denial semantics
+
+The initial `lb_run_shell` result now adds optional `status`, `isComplete`, and
+`exitCode` fields. `status=initial_wait_elapsed` means the wait budget expired:
+the command can still be running. `status=waiting_for_input` is a conservative
+prompt heuristic, not a policy refusal; `status=process_exit` indicates a
+closed child with `exitCode`. `spawn_error` and `process_error` identify
+process failures. An actual `blockedCommands` denial continues to reject the
+call with a policy error before spawning. `isBlocked` is kept for old clients
+as a legacy wait hint and MUST NOT be interpreted as a security denial or a
+completed process. Read `lb_shell_output` using the original PID for the
+eventual `isComplete` and exit code; do not rerun the command.
+
+SSH compatibility: earlier versions insert `-t` into a leading plain
+`ssh ` command unless it already contains ` -t`. v0.2.2 deliberately does
+not change this behavior, since a silent default change can break existing
+clients. For noninteractive SSH, existing clients should review OpenSSH option
+precedence carefully: the legacy LocalBridge rewriter still adds `-t`,
+including alongside an explicit `-T`, and this patch does not guarantee
+PTY suppression.
+A future additive typed `tty` option should be negotiated separately before
+changing this default. v0.2.2 does not alter SSH host-key verification or
+command policy.
+
 # LocalBridge MCP
 
 [![CI](https://github.com/danielcanfly/localbridge-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/danielcanfly/localbridge-mcp/actions/workflows/ci.yml)
@@ -133,7 +157,7 @@ Every user must provide their own platform configuration, key, and filesystem bo
 
 | Item | Status |
 | --- | --- |
-| Latest release | `v0.2.1` |
+| Latest source version | `v0.2.2` |
 | Distribution | Source release only |
 | npm package | Disabled intentionally (`private: true`) |
 | Qualified online platform path | ChatGPT through OpenAI Secure MCP Tunnel |
@@ -144,7 +168,7 @@ Every user must provide their own platform configuration, key, and filesystem bo
 | Windows | Not yet qualified; do not advertise as supported |
 | Hosted relay | Not provided |
 
-Release: [LocalBridge MCP v0.2.1](https://github.com/danielcanfly/localbridge-mcp/releases/tag/v0.2.1)
+Release notes: [LocalBridge MCP v0.2.2](docs/releases/v0.2.2.md)
 
 ## What this repo is and is not
 
@@ -433,6 +457,7 @@ npm run release:preflight
 - [Architecture](docs/ARCHITECTURE.md)
 - [Portability](docs/PORTABILITY.md)
 - [Release process](docs/RELEASE_PROCESS.md)
+- [Tool result and policy-denial diagnostics](docs/TOOL_RESULT_DIAGNOSTICS.md)
 - [Security policy](SECURITY.md)
 - [v0.2.1 release notes](docs/releases/v0.2.1.md)
 - [v0.2.0 release notes](docs/releases/v0.2.0.md)

@@ -24,8 +24,8 @@ Usage:
     [--force-profile] [--no-service]
 
 Examples:
-  sh scripts/setup-chatgpt-machine.sh --machine macbook-air --allow $HOME
-  sh scripts/setup-chatgpt-machine.sh --machine mac-mini --allow $HOME
+  sh scripts/setup-chatgpt-machine.sh --machine macbook-air --allow /Users/your-account
+  sh scripts/setup-chatgpt-machine.sh --machine mac-mini --allow /Users/another-account
 
 Purpose:
   Install one named ChatGPT/OpenAI Secure MCP Tunnel runtime per Mac.

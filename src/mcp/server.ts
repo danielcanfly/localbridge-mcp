@@ -1,6 +1,7 @@
 import * as z from 'zod/v4';
 import { McpServer } from '@modelcontextprotocol/server';
 import { MCP_SERVER_VERSION } from '../config.js';
+import { ToolReceiptBuffer, withToolReceipt } from '../core/tool-receipt-telemetry.js';
 import { configManager } from '../config-manager.js';
 import {
   createDirectory,
@@ -36,16 +37,6 @@ function errorResult(error: unknown): ToolResult {
   return { content: [{ type: 'text', text: `Error: ${message}` }], isError: true };
 }
 
-function safe<TArgs>(fn: (args: TArgs) => Promise<ToolResult> | ToolResult) {
-  return async (args: TArgs): Promise<ToolResult> => {
-    try {
-      return await fn(args);
-    } catch (error) {
-      return errorResult(error);
-    }
-  };
-}
-
 export const LOCALBRIDGE_MCP_TOOL_NAMES = [
   'lb_read_text',
   'lb_read_many_texts',
@@ -66,11 +57,18 @@ export const LOCALBRIDGE_MCP_TOOL_NAMES = [
   'lb_shell_kill'
 ] as const;
 
-export function createLocalBridgeMCPServer(): McpServer {
+export function createLocalBridgeMCPServer(options: { receiptBuffer?: ToolReceiptBuffer } = {}): McpServer {
   const server = new McpServer({
     name: 'localbridge-mcp',
     version: MCP_SERVER_VERSION
   });
+
+  // No config/env/MCP flag: only a trusted caller explicitly injecting a
+  // process-local buffer enables receipts. Legacy default stays identical.
+  function safe<TArgs>(name: typeof LOCALBRIDGE_MCP_TOOL_NAMES[number],
+    fn: (args: TArgs) => Promise<ToolResult> | ToolResult) {
+    return withToolReceipt(name, LOCALBRIDGE_MCP_TOOL_NAMES, fn, errorResult, options.receiptBuffer);
+  }
 
   server.registerTool(
     'lb_read_text',
@@ -83,7 +81,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       }),
       annotations: { title: 'LocalBridge read text', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ file_path, line_offset, line_count }) => textResult(await readFile(file_path, line_offset, line_count)))
+    safe('lb_read_text', async ({ file_path, line_offset, line_count }) => textResult(await readFile(file_path, line_offset, line_count)))
   );
 
   server.registerTool(
@@ -97,7 +95,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       }),
       annotations: { title: 'LocalBridge read many texts', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ file_paths, line_offset, line_count }) => {
+    safe('lb_read_many_texts', async ({ file_paths, line_offset, line_count }) => {
       const results = await Promise.all(file_paths.map(async filePath => {
         try {
           return { file_path: filePath, content: await readFile(filePath, line_offset, line_count) };
@@ -116,7 +114,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       inputSchema: z.object({ directory_path: z.string().min(1) }),
       annotations: { title: 'LocalBridge list entries', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ directory_path }) => jsonResult(await listDirectory(directory_path)))
+    safe('lb_list_entries', async ({ directory_path }) => jsonResult(await listDirectory(directory_path)))
   );
 
   server.registerTool(
@@ -126,7 +124,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       inputSchema: z.object({ target_path: z.string().min(1) }),
       annotations: { title: 'LocalBridge stat path', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ target_path }) => jsonResult(await getFileInfo(target_path)))
+    safe('lb_stat_path', async ({ target_path }) => jsonResult(await getFileInfo(target_path)))
   );
 
   server.registerTool(
@@ -140,7 +138,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       }),
       annotations: { title: 'LocalBridge write text', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
     },
-    safe(async ({ file_path, text, write_mode }) => {
+    safe('lb_write_text', async ({ file_path, text, write_mode }) => {
       await writeFile(file_path, text, write_mode);
       const cfg = await configManager.getConfig();
       const lineCount = text.split('\n').length;
@@ -158,7 +156,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       inputSchema: z.object({ directory_path: z.string().min(1) }),
       annotations: { title: 'LocalBridge make directory', readOnlyHint: false, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ directory_path }) => {
+    safe('lb_make_directory', async ({ directory_path }) => {
       await createDirectory(directory_path);
       return textResult(`CREATED ${directory_path}`);
     })
@@ -174,7 +172,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       }),
       annotations: { title: 'LocalBridge move path', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
     },
-    safe(async ({ from_path, to_path }) => {
+    safe('lb_move_path', async ({ from_path, to_path }) => {
       await moveFile(from_path, to_path);
       return textResult(`MOVED ${from_path} -> ${to_path}`);
     })
@@ -192,7 +190,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       }),
       annotations: { title: 'LocalBridge patch text block', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
     },
-    safe(async ({ file_path, find_text, replace_text, expected_matches }) =>
+    safe('lb_patch_text_block', async ({ file_path, find_text, replace_text, expected_matches }) =>
       jsonResult(await editBlock(file_path, find_text, replace_text, expected_matches))
     )
   );
@@ -215,7 +213,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       }),
       annotations: { title: 'LocalBridge search start', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async args => jsonResult(await searchManager.startSearch({
+    safe('lb_search_start', async args => jsonResult(await searchManager.startSearch({
       rootPath: args.search_root,
       pattern: args.query_text,
       searchType: args.query_kind,
@@ -240,7 +238,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       }),
       annotations: { title: 'LocalBridge search read', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ search_id, result_offset, result_count }) =>
+    safe('lb_search_read', async ({ search_id, result_offset, result_count }) =>
       jsonResult(searchManager.readSearchResults(search_id, result_offset, result_count))
     )
   );
@@ -252,7 +250,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       inputSchema: z.object({ search_id: z.string().min(1) }),
       annotations: { title: 'LocalBridge search cancel', readOnlyHint: false, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ search_id }) => jsonResult({ stopped: searchManager.stopSearch(search_id) }))
+    safe('lb_search_cancel', async ({ search_id }) => jsonResult({ stopped: searchManager.stopSearch(search_id) }))
   );
 
   server.registerTool(
@@ -262,13 +260,13 @@ export function createLocalBridgeMCPServer(): McpServer {
       inputSchema: z.object({}),
       annotations: { title: 'LocalBridge search sessions', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async () => jsonResult(searchManager.listSearches()))
+    safe('lb_search_sessions', async () => jsonResult(searchManager.listSearches()))
   );
 
   server.registerTool(
     'lb_run_shell',
     {
-      description: 'Start a shell command in a persistent local terminal session. The session can later receive stdin and expose paginated output. Commands are checked against the configured blocklist.',
+      description: 'Start a persistent shell session. In the JSON result, isBlocked is a LEGACY WAIT HINT, NOT a policy/safety denial. Use status and isComplete: waiting_for_input or initial_wait_elapsed means the same PID may still run; read lb_shell_output for completion/exitCode, never rerun an uncertain command. A true LocalBridge blockedCommands denial returns an MCP tool error before spawning. Separate client/platform safety refusals may prevent this tool call entirely.',
       inputSchema: z.object({
         command_line: z.string().min(1),
         wait_ms: z.number().int().positive().max(300000).default(3000),
@@ -276,7 +274,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       }),
       annotations: { title: 'LocalBridge run shell', readOnlyHint: false, destructiveHint: true, openWorldHint: true }
     },
-    safe(async ({ command_line, wait_ms, shell_path }) =>
+    safe('lb_run_shell', async ({ command_line, wait_ms, shell_path }) =>
       jsonResult(await startProcess(command_line, wait_ms, shell_path))
     )
   );
@@ -284,7 +282,7 @@ export function createLocalBridgeMCPServer(): McpServer {
   server.registerTool(
     'lb_shell_output',
     {
-      description: 'Read paginated stdout/stderr captured for an active or recently completed terminal session.',
+      description: 'Read stdout/stderr for an existing PID. isComplete=false means the same process is still active; read again on the same PID as appropriate. isComplete=true with exitCode is terminal execution completion, not an authorization verdict. Never retry a platform/tool-policy-refused command.',
       inputSchema: z.object({
         process_id: z.number().int().positive(),
         line_offset: z.number().int().default(0),
@@ -292,7 +290,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       }),
       annotations: { title: 'LocalBridge shell output', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async ({ process_id, line_offset, line_count }) => jsonResult(readProcessOutput(process_id, line_offset, line_count)))
+    safe('lb_shell_output', async ({ process_id, line_offset, line_count }) => jsonResult(readProcessOutput(process_id, line_offset, line_count)))
   );
 
   server.registerTool(
@@ -305,7 +303,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       }),
       annotations: { title: 'LocalBridge shell input', readOnlyHint: false, destructiveHint: true, openWorldHint: true }
     },
-    safe(async ({ process_id, stdin_text }) => {
+    safe('lb_shell_input', async ({ process_id, stdin_text }) => {
       if (!(await interactWithProcess(process_id, stdin_text))) throw new Error(`Process ${process_id} not found or stdin unavailable`);
       return textResult(`INPUT_SENT pid=${process_id}`);
     })
@@ -318,7 +316,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       inputSchema: z.object({}),
       annotations: { title: 'LocalBridge shell sessions', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe(async () => jsonResult(listSessions()))
+    safe('lb_shell_sessions', async () => jsonResult(listSessions()))
   );
 
   server.registerTool(
@@ -328,7 +326,7 @@ export function createLocalBridgeMCPServer(): McpServer {
       inputSchema: z.object({ process_id: z.number().int().positive() }),
       annotations: { title: 'LocalBridge shell kill', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
     },
-    safe(async ({ process_id }) => {
+    safe('lb_shell_kill', async ({ process_id }) => {
       if (!forceTerminate(process_id)) throw new Error(`Process ${process_id} not found`);
       return textResult(`TERMINATION_REQUESTED pid=${process_id}`);
     })

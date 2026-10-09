@@ -1,53 +1,39 @@
 # Release process
 
-LocalBridge MCP uses source-only GitHub releases. npm publication remains disabled.
+LocalBridge MCP uses source-only GitHub releases. npm publication remains disabled (`private: true`).
 
-## Current product release
+## Candidate
 
-The current product release target is:
+v0.2.2 is an **unreleased candidate**. The installed Runtime.app remains on its separately managed live version. Do not equate a static scan or local worktree with release qualification.
 
-    v0.2.0
+## 1. Explicit isolated review checkout
 
-The package remains:
+Use a clean, vetted branch checked out into an isolated worktree. The preflight must be configured by the caller and writes only into an existing isolated scratch directory within the worktree.
 
-    "private": true
+```sh
+mkdir -p .release-scratch
+RELEASE_EXPECT_BRANCH=fix/lb03-release-pipeline \
+RELEASE_EXPECT_VERSION=0.2.2 \
+RELEASE_SCRATCH_ROOT="$PWD/.release-scratch" \
+RELEASE_PHASE=static ./scripts/release-preflight.sh
+```
 
-This prevents accidental npm publication while still giving the source tree a coherent release version.
+The static phase checks version and private package lock consistency, required notices, security/privacy in the current tree and all reachable history, sensitive filenames, SHA-pinned GitHub Actions and the source archive checksum. Commit author identity is enforced strictly on every commit after the immutable already-public v0.2.1 baseline; preexisting publicly visible author identities are counted and disclosed as historical exceptions rather than silently rewritten. Tag drift, new non-noreply identities or any source privacy hit fails closed. This explicit historical exception requires owner/reviewer acceptance as part of the release decision. Static prints **PARTIAL**, never final release PASS.
 
-## 1. Local release preflight
+## 2. Offline dependency and full test gate
 
-Run from a clean `main` checkout:
+After independent approval for an already-existing offline dependency source **inside this isolated worktree**, first read all nested test scripts and confirm temporary/build/cache effects stay inside this worktree. Run with `RELEASE_PHASE=offline` and the same explicit expected parameters. This runs the dependency license gate and full `npm test` but explicitly does not run online audit or clean archive install.
 
-    ./scripts/release-preflight.sh
+## 3. Network security and clean archive gate
 
-The preflight reruns the full test suite, npm audit, privacy/history checks, commit-identity checks, dependency-license checks, GitHub Action pinning checks, and then builds/tests a clean `git archive` copy with an isolated HOME.
+Only after separate explicit authorization for network and dependency installs, set `RELEASE_PHASE=network RELEASE_ALLOW_NETWORK=YES` with the same parameters. This additionally performs `npm audit`, clean archive `npm ci`, tests and audit under worktree-contained scratch. Do not run this in offline-only jobs.
 
-## 2. CI
+No phase may silently bypass privacy/history, identity, license, CodeQL or audit. Each deferred gate must be reported as NOT_RUN.
 
-Push the release commit and require the CI matrix to pass:
+## 4. CI / security review
 
-- Ubuntu / Node.js 20
-- Ubuntu / Node.js 24
-- macOS / Node.js 20
-- macOS / Node.js 24
+Review the source diff through an independently authorized GitHub PR. Require Ubuntu and macOS on Node 20 and 24 plus public CodeQL, provenance/privacy/licensing, archive checksum and backward compatibility. Do not create remote objects during local candidate preparation.
 
-CodeQL must also pass when the repository is public.
+## 5. Release and rollback
 
-## 3. Tag
-
-Create an annotated release tag only after the final release commit and CI are green:
-
-    git tag -a v0.2.0 -m "LocalBridge MCP v0.2.0"
-    git push origin v0.2.0
-
-## 4. Draft GitHub release
-
-Create a draft GitHub release from the reviewed notes in `docs/releases/v0.2.0.md`.
-
-The release is source-only. Do not attach the locally built Runtime.app because its ad-hoc signature is specific to the local installation path and is not a notarized public binary.
-
-## 5. Publish release
-
-After public security settings, CodeQL, source archive checksum, and live-runtime evidence are healthy, publish the draft release.
-
-Branch protection remains opt-in because it changes maintainer workflow.
+After approval, separately authorize an annotated `v0.2.2` tag and source-only GitHub release based on `docs/releases/v0.2.2.md`. Do not attach an ad-hoc signed local Runtime.app. Deploy or restart the live Runtime.app/tunnel only under a **separate** approval with backup, smoke test, and documented rollback to the previous installed runtime. Branch protection changes remain optional and separately approved.
