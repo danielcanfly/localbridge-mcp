@@ -296,7 +296,8 @@ export class TerminalManager {
         forwardProcessError(err);
       } else {
         pendingProcessError = err;
-        console.error(`Process error for "${command}": ${err.message}`);
+        // The command string and OS error details can contain credentials or private paths.
+        console.error('Process spawn error (details withheld)');
       }
     });
 
