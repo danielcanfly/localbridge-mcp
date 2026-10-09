@@ -66,6 +66,7 @@ interface CompletedSession {
 export const MAX_BUFFERED_OUTPUT_CHARS = 50 * 1024 * 1024;  // per session; oldest lines evicted first
 const MAX_LINE_CHARS = 1024 * 1024;                  // force-split longer lines so eviction can work
 const MAX_WAIT_OUTPUT_CHARS = 2 * 1024 * 1024;       // start_process wait buffer (prompt/state detection)
+const MAX_TIMING_EVENTS = 128; // metadata only: never retain unbounded event records
 
 // Result type for paginated output reading
 export interface PaginatedOutputResult {
@@ -332,6 +333,13 @@ export class TerminalManager {
     let firstOutputTime: number | undefined;
     let lastOutputTime: number | undefined;
     const outputEvents: OutputEvent[] = [];
+    // Keep only safe event metadata. The legacy required snippet field remains
+    // a constant placeholder; it never contains stdout, stderr or arguments.
+    const appendTimingEvent = (event: OutputEvent): void => {
+      if (!collectTiming) return;
+      if (outputEvents.length >= MAX_TIMING_EVENTS) outputEvents.shift();
+      outputEvents.push(event);
+    };
     let exitReason: TimingInfo['exitReason'] = 'timeout';
 
     return new Promise((resolve) => {
@@ -404,15 +412,13 @@ export class TerminalManager {
         this.appendToLineBuffer(session, text);
 
         // Record output event if collecting timing
-        if (collectTiming) {
-          outputEvents.push({
-            timestamp: now,
-            deltaMs: now - startTime,
-            source: 'stdout',
-            length: text.length,
-            snippet: text.slice(0, 50).replace(/\n/g, '\\n')
-          });
-        }
+        appendTimingEvent({
+          timestamp: now,
+          deltaMs: now - startTime,
+          source: 'stdout',
+          length: text.length,
+          snippet: '[redacted]'
+        });
 
         // Immediate check for obvious prompts
         if (!resolved && analyzeProcessState(output).isWaitingForInput) {
@@ -450,15 +456,13 @@ export class TerminalManager {
         this.appendToLineBuffer(session, text);
 
         // Record output event if collecting timing
-        if (collectTiming) {
-          outputEvents.push({
-            timestamp: now,
-            deltaMs: now - startTime,
-            source: 'stderr',
-            length: text.length,
-            snippet: text.slice(0, 50).replace(/\n/g, '\\n')
-          });
-        }
+        appendTimingEvent({
+          timestamp: now,
+          deltaMs: now - startTime,
+          source: 'stderr',
+          length: text.length,
+          snippet: '[redacted]'
+        });
       });
 
       // Periodic comprehensive check every 100ms

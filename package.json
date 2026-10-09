@@ -11,10 +11,11 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test:core": "npm run build && node dist/test/core.integration.js",
-    "test": "npm run test:core && npm run test:mcp && npm run test:policy && npm run test:terminal-independent && npm run test:ssh-pty-privacy && npm run test:spawn-error-privacy && npm run test:runtime && npm run test:public && npm run test:release && npm run test:release-policy && npm run test:lifecycle && npm run test:final",
+    "test": "npm run test:core && npm run test:mcp && npm run test:policy && npm run test:terminal-independent && npm run test:timing-privacy && npm run test:ssh-pty-privacy && npm run test:spawn-error-privacy && npm run test:runtime && npm run test:public && npm run test:release && npm run test:release-policy && npm run test:lifecycle && npm run test:final",
     "test:mcp": "npm run build && node dist/test/mcp-surface.integration.js",
     "test:policy": "npm run build && node dist/test/policy.integration.js",
     "test:terminal-independent": "npm run build && node dist/test/terminal-independent.integration.js",
+    "test:timing-privacy": "npm run build && node dist/test/timing-privacy.integration.js",
     "test:ssh-pty-privacy": "npm run build && node dist/test/ssh-pty-privacy.integration.js",
     "test:spawn-error-privacy": "npm run build && node dist/test/spawn-error-privacy.integration.js",
     "test:runtime": "node scripts/test-runtime.mjs",
