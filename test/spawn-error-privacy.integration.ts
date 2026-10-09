@@ -5,8 +5,8 @@ import path from 'node:path';
 // Regression: a failed local child spawn must not print a supplied shell command
 // or child-supplied exception text into LocalBridge server-side diagnostics.
 // No real SSH, provider, network, or privileged command is executed.
-const fixtureRoot = process.env.LOCALBRIDGE_LB14_FIXTURE_ROOT;
-assert.ok(fixtureRoot, 'isolated fixture root is mandatory');
+const fixtureRoot = process.env.LOCALBRIDGE_LB14_FIXTURE_ROOT || process.env.TMPDIR;
+assert.ok(fixtureRoot, 'isolated fixture root or TMPDIR is mandatory');
 await fs.mkdir(fixtureRoot, { recursive: true });
 const configDir = path.join(fixtureRoot, 'config');
 process.env.LOCALBRIDGE_MCP_CONFIG_DIR = configDir;
