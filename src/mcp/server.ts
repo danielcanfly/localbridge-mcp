@@ -2,6 +2,7 @@ import * as z from 'zod/v4';
 import { McpServer } from '@modelcontextprotocol/server';
 import { MCP_SERVER_VERSION } from '../config.js';
 import { ToolReceiptBuffer, withToolReceipt } from '../core/tool-receipt-telemetry.js';
+import { ShellOperationRegistry } from '../core/shell-operation-registry.js';
 import { configManager } from '../config-manager.js';
 import {
   createDirectory,
@@ -62,6 +63,8 @@ export function createLocalBridgeMCPServer(options: { receiptBuffer?: ToolReceip
     name: 'localbridge-mcp',
     version: MCP_SERVER_VERSION
   });
+  // Opaque correlation only; not an authorization token or requester identity.
+  const shellOperations = new ShellOperationRegistry();
 
   // No config/env/MCP flag: only a trusted caller explicitly injecting a
   // process-local buffer enables receipts. Legacy default stays identical.
@@ -274,36 +277,49 @@ export function createLocalBridgeMCPServer(options: { receiptBuffer?: ToolReceip
       }),
       annotations: { title: 'LocalBridge run shell', readOnlyHint: false, destructiveHint: true, openWorldHint: true }
     },
-    safe('lb_run_shell', async ({ command_line, wait_ms, shell_path }) =>
-      jsonResult(await startProcess(command_line, wait_ms, shell_path))
-    )
+    safe('lb_run_shell', async ({ command_line, wait_ms, shell_path }) => {
+      const result = await startProcess(command_line, wait_ms, shell_path);
+      // Local policy blocks before startProcess returns. Spawn errors without
+      // a positive PID must not receive an operation ID.
+      if (!Number.isSafeInteger(result.pid) || result.pid <= 0) return jsonResult(result);
+      const operationId = shellOperations.register(result.pid);
+      return jsonResult({ ...result, operationId });
+    })
   );
 
   server.registerTool(
     'lb_shell_output',
     {
-      description: 'Read stdout/stderr for an existing PID. isComplete=false means the same process is still active; read again on the same PID as appropriate. isComplete=true with exitCode is terminal execution completion, not an authorization verdict. Never retry a platform/tool-policy-refused command.',
+      description: 'Read stdout/stderr for an existing PID. Optional operation_id verifies advisory same-operation correlation when supplied, but is not identity authentication. isComplete=false means the process is still active; isComplete=true with exitCode is terminal completion, not authorization. Never retry a platform/tool-policy-refused command.',
       inputSchema: z.object({
         process_id: z.number().int().positive(),
+        operation_id: z.string().uuid().optional(),
         line_offset: z.number().int().default(0),
         line_count: z.number().int().positive().max(10000).default(1000)
       }),
       annotations: { title: 'LocalBridge shell output', readOnlyHint: true, destructiveHint: false, openWorldHint: false }
     },
-    safe('lb_shell_output', async ({ process_id, line_offset, line_count }) => jsonResult(readProcessOutput(process_id, line_offset, line_count)))
+    safe('lb_shell_output', async ({ process_id, operation_id, line_offset, line_count }) => {
+      shellOperations.assertMatches(process_id, operation_id);
+      const result = readProcessOutput(process_id, line_offset, line_count);
+      const operationId = shellOperations.get(process_id);
+      return jsonResult(operationId ? { ...result, operationId } : result);
+    })
   );
 
   server.registerTool(
     'lb_shell_input',
     {
-      description: 'Send a line of stdin to an active persistent terminal session.',
+      description: 'Send a line of stdin to an active persistent terminal session. Optional operation_id rejects mismatched PID/operation correlations. It is not a client authorization token.',
       inputSchema: z.object({
         process_id: z.number().int().positive(),
+        operation_id: z.string().uuid().optional(),
         stdin_text: z.string()
       }),
       annotations: { title: 'LocalBridge shell input', readOnlyHint: false, destructiveHint: true, openWorldHint: true }
     },
-    safe('lb_shell_input', async ({ process_id, stdin_text }) => {
+    safe('lb_shell_input', async ({ process_id, operation_id, stdin_text }) => {
+      shellOperations.assertMatches(process_id, operation_id);
       if (!(await interactWithProcess(process_id, stdin_text))) throw new Error(`Process ${process_id} not found or stdin unavailable`);
       return textResult(`INPUT_SENT pid=${process_id}`);
     })
@@ -322,11 +338,12 @@ export function createLocalBridgeMCPServer(options: { receiptBuffer?: ToolReceip
   server.registerTool(
     'lb_shell_kill',
     {
-      description: 'Terminate an active terminal session by PID, escalating from SIGINT to SIGKILL if necessary.',
-      inputSchema: z.object({ process_id: z.number().int().positive() }),
+      description: 'Terminate an active terminal session by PID, escalating from SIGINT to SIGKILL if necessary. Optional operation_id rejects mismatch before signalling. It is not identity authentication.',
+      inputSchema: z.object({ process_id: z.number().int().positive(), operation_id: z.string().uuid().optional() }),
       annotations: { title: 'LocalBridge shell kill', readOnlyHint: false, destructiveHint: true, openWorldHint: false }
     },
-    safe('lb_shell_kill', async ({ process_id }) => {
+    safe('lb_shell_kill', async ({ process_id, operation_id }) => {
+      shellOperations.assertMatches(process_id, operation_id);
       if (!forceTerminate(process_id)) throw new Error(`Process ${process_id} not found`);
       return textResult(`TERMINATION_REQUESTED pid=${process_id}`);
     })

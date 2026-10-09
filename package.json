@@ -16,6 +16,7 @@
     "test:policy": "npm run build && node dist/test/policy.integration.js",
     "test:terminal-independent": "npm run build && node dist/test/terminal-independent.integration.js",
     "test:timing-privacy": "npm run build && node dist/test/timing-privacy.integration.js",
+    "test:operation-correlation": "npm run build && node dist/test/operation-correlation.integration.js",
     "test:ssh-pty-privacy": "npm run build && node dist/test/ssh-pty-privacy.integration.js",
     "test:spawn-error-privacy": "npm run build && node dist/test/spawn-error-privacy.integration.js",
     "test:runtime": "node scripts/test-runtime.mjs",
