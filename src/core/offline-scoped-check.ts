@@ -66,6 +66,10 @@ export function createOfflineFixtureChecker(policy: ScopedFixturePolicy) {
           shell: false,
           stdio: ['ignore', 'pipe', 'pipe'],
           windowsHide: true,
+          // POSIX: a new group allows timeout/overflow cleanup to include
+          // descendants that inherited the original child's process group.
+          // This is NOT an OS sandbox: setsid/new groups can still escape.
+          detached: process.platform !== 'win32',
           env: { PATH: '/usr/bin:/bin', HOME: root, TMPDIR: root, XDG_CACHE_HOME: root }
         });
         let out = '';
@@ -74,7 +78,17 @@ export function createOfflineFixtureChecker(policy: ScopedFixturePolicy) {
         let timedOut = false;
         let overflow = false;
         let finished = false;
-        const kill = () => { try { child.kill('SIGKILL'); } catch { /* already exited */ } };
+        const killGroup = () => {
+          // Only signal a process group created for THIS synthetic child.
+          // Descendants sharing that group must not survive even a normal exit.
+          if (process.platform !== 'win32' && child.pid && child.pid > 1) {
+            try { process.kill(-child.pid, 'SIGKILL'); } catch { /* group already gone */ }
+          }
+        };
+        const kill = () => {
+          killGroup();
+          try { child.kill('SIGKILL'); } catch { /* child already exited */ }
+        };
         const timer = setTimeout(() => { timedOut = true; kill(); }, recipe.timeoutMs);
         const record = (buffer: Buffer, stream: 'stdout' | 'stderr') => {
           const remaining = Math.max(0, recipe.maxOutputBytes - total);
@@ -96,6 +110,7 @@ export function createOfflineFixtureChecker(policy: ScopedFixturePolicy) {
           if (finished) return;
           finished = true;
           clearTimeout(timer);
+          killGroup(); // normal parent exit must not orphan its group
           resolve({
             exitCode: code, timedOut, outputExceeded: overflow,
             stdout: out, stderr: err
