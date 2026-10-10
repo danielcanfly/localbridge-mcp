@@ -35,4 +35,8 @@ jobs:
         run: npm ci
 
       - name: Test
+        # Linux runners may not define TMPDIR; use an existing private runner
+        # scratch directory rather than silently falling back to /tmp.
+        env:
+          TMPDIR: ${{ runner.temp }}
         run: npm test
