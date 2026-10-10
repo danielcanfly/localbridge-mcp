@@ -21,16 +21,22 @@ function shellQuote(v: string) {
   return process.platform === 'win32' ? JSON.stringify(v) : "'" + v.replace(/'/g, "'\"'\"'") + "'";
 }
 try {
-  const fixture = path.join(root, 'many-events.mjs');
-  await fs.writeFile(fixture, [
+  // Use fixed synthetic source with Node -e rather than turning a TMPDIR-
+  // derived file path into a shell argument. This keeps the same stdout/stderr
+  // timing stress but eliminates a false-positive environment-to-shell flow.
+  const inlineFixture = [
     "const wait = ms => new Promise(resolve => setTimeout(resolve, ms));",
+    "(async () => {",
     "for (let i = 0; i < 240; i++) {",
     "  process.stdout.write('LB15_SYNTHETIC_NOT_A_CREDENTIAL_CANARY_STDOUT_' + i + '\\n');",
     "  process.stderr.write('LB15_SYNTHETIC_NOT_A_CREDENTIAL_CANARY_STDERR_' + i + '\\n');",
     "  await wait(3);",
-    "}"
-  ].join('\n'));
-  const result = await core.startProcess([process.execPath, fixture].map(shellQuote).join(' '), 5000);
+    "}",
+    "})().catch(() => { process.exitCode = 1; });"
+  ].join('\n');
+  const result = await core.startProcess(
+    [process.execPath, '-e', inlineFixture].map(shellQuote).join(' '), 5000
+  );
   assert.equal(result.isComplete, true, 'fixture needs a final child result');
   assert.equal(result.exitCode, 0);
   assert.match(result.output, /LB15_SYNTHETIC_NOT_A_CREDENTIAL_CANARY/);

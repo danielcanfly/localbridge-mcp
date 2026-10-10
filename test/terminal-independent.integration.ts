@@ -27,8 +27,14 @@ await configManager.updateConfig({
 });
 
 function shellQuote(value: string): string {
-  if (process.platform === 'win32') return `"${value.replace(/"/g, '\\"')}"`;
-  return `'${value.replace(/'/g, `'"'"'`)}'`;
+  if (process.platform === 'win32') return '"' + value.replace(/"/g, '\\"') + '"';
+  // POSIX double quotes preserve arguments while escaping all characters
+  // with expansion or quote semantics, including literal backslashes.
+  return '"' + value
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\$/g, '\\$')
+    .replace(/\x60/g, '\\\x60') + '"';
 }
 
 function commandFor(script: string, ...args: string[]): string {
