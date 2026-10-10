@@ -193,7 +193,10 @@ try {
   assert.equal(malformedPinResult.status, 2);
   assertRedacted(malformedPinResult, ['not-a-full-sha']);
 
-  const foreign = await createRepo('foreign-pin');
+  // Git object identities depend on content, metadata and second-level timestamps.
+  // Two fresh repos with identical baseline data can accidentally share a SHA
+  // on fast Linux runners; use distinct fixture contents to prove unreachable.
+  const foreign = await createRepo('foreign-pin', 'distinct synthetic foreign baseline\n');
   const unreachablePinResult = policy(clean.repo, foreign.baseline);
   assert.equal(unreachablePinResult.status, 2);
   assertRedacted(unreachablePinResult, [foreign.baseline]);

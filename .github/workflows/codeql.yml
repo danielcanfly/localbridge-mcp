@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+      # Qualification branch tests sanitized source before the protected
+      # main-history cutover; only runs in public repositories.
+      - ci/sanitized-v022-qualification-20261010
   pull_request:
     branches:
       - main
